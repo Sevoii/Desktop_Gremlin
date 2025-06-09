@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Desktop_Gremlin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="100" Width="100"
+        Title="MainWindow" Height="115" Width="185"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -14,8 +14,15 @@
     <Canvas MouseLeftButtonDown="Canvas_MouseLeftButtonDown" >
         <Image Name="SpriteImage"
            Width="80" Height="80"
-           Canvas.Left="10"
-           HorizontalAlignment="Center"
-           VerticalAlignment="Top"/>
+           HorizontalAlignment="Left"
+           VerticalAlignment="Center"
+           Source="Sprites/Idle/0.png" Canvas.Top="20"/>
+        <Label x:Name="SpriteLabel"
+           Content="test"
+           Background="Transparent"
+           Foreground="White"
+           FontWeight="Bold"
+           FontSize="14"
+           VerticalContentAlignment="Center" RenderTransformOrigin="-0.145,-0.349" HorizontalAlignment="Left" VerticalAlignment="Center" Width="135" Canvas.Left="45" Canvas.Top="6"/>
     </Canvas>
 </Window>

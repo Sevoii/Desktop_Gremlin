@@ -11,6 +11,9 @@ namespace Desktop_Gremlin
 {
     internal class LoadFrames
     {
-       
+        public List<BitmapImage> IDLE_IMAGES = new List<BitmapImage>();
+        public List<BitmapImage> IDLE_DRAG = new List<BitmapImage>(); 
+        public List<BitmapImage> IDLE_MOVEMENT = new List<BitmapImage>();
+
     }
 }

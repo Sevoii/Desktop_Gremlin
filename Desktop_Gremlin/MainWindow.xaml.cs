@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using System.Windows.Interop;
-using System.IO;
 
 namespace Desktop_Gremlin
 {
@@ -37,7 +29,7 @@ namespace Desktop_Gremlin
         private bool IS_WALKING = false;
         private bool IS_DRAGGING = false;
         private bool LAST_DRAG_STATE = false;
-        private bool LAST_STATE_DRAG_OR_WALK = false; // for animation reset
+        private bool LAST_STATE_DRAG_OR_WALK = false;
         public enum Direction
         {
             Left,
@@ -46,12 +38,16 @@ namespace Desktop_Gremlin
             Down
         }
         private Direction CURRENT_DIRECTION = Direction.Right;
-        private double SPEED = 10.0; // pixels per tick
+        private double SPEED = 10.0;
 
         private bool MOVE_LEFT = false;
         private bool MOVE_RIGHT = false;
         private bool MOVE_UP = false;
         private bool MOVE_DOWN = false;
+
+        private double deltaX = 0;
+        private double deltaY = 0;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -61,6 +57,7 @@ namespace Desktop_Gremlin
             LoadWalkFrames();
             InitializeAnimationTimers();
         }
+
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -79,14 +76,14 @@ namespace Desktop_Gremlin
             else if (e.Key == Key.Up)
             {
                 MOVE_UP = true;
-                IS_WALKING = true;  
+                IS_WALKING = true;
                 CURRENT_DIRECTION = Direction.Up;
             }
             else if (e.Key == Key.Down)
             {
                 MOVE_DOWN = true;
                 IS_WALKING = true;
-                CURRENT_DIRECTION = Direction.Down; 
+                CURRENT_DIRECTION = Direction.Down;
             }
         }
 
@@ -172,10 +169,13 @@ namespace Desktop_Gremlin
 
             return frames;
         }
-
+        public static double Clamp(double value, double min, double max)
+        {
+            return Math.Max(min, Math.Min(max, value));
+        }
         private void InitializeAnimationTimers()
         {
-            // Idle Animation
+            // IDLING
             IDLE_TIMER = new DispatcherTimer();
             IDLE_TIMER.Interval = TimeSpan.FromMilliseconds(300);
             IDLE_TIMER.Tick += (s, e) =>
@@ -188,54 +188,65 @@ namespace Desktop_Gremlin
                 }
             };
 
-            // Walk Animation
+            // WALKING 
             WALK_TIMER = new DispatcherTimer();
             WALK_TIMER.Interval = TimeSpan.FromMilliseconds(60);
             WALK_TIMER.Tick += (s, e) =>
             {
                 if (IS_WALKING)
                 {
-                    switch (CURRENT_DIRECTION)
+                    deltaX = 0;
+                    deltaY = 0;
+
+
+                    if (MOVE_LEFT) deltaX -= SPEED;
+                    if (MOVE_RIGHT) deltaX += SPEED;
+                    if (MOVE_UP) deltaY -= SPEED;
+                    if (MOVE_DOWN) deltaY += SPEED;
+
+                    if (deltaX != 0 && deltaY != 0)
                     {
-                        case 
-                        Direction.Left: this.Left = Math.Max(0, this.Left - SPEED); 
-                            break;
-                        case Direction.Right: this.Left = Math.Min(SystemParameters.PrimaryScreenWidth - this.Width, this.Left + SPEED); break;
-                        case Direction.Up: this.Top = Math.Max(0, this.Top - SPEED); break;
-                        case Direction.Down: this.Top = Math.Min(SystemParameters.PrimaryScreenHeight - this.Height, this.Top + SPEED); break;
+                        double length = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+                        deltaX = (deltaX / length) * SPEED;
+                        deltaY = (deltaY / length) * SPEED;
                     }
 
+                    //this.Left = Clamp(this.Left + deltaX, 0, SystemParameters.PrimaryScreenWidth - this.Width);
+                    //this.Top = Clamp(this.Top + deltaY, 0, SystemParameters.PrimaryScreenHeight - this.Height);
+                    this.Left = this.Left + deltaX;
+                    this.Top = this.Top + deltaY;
                     List<BitmapImage> frames;
-                    switch (CURRENT_DIRECTION)
+                    if (Math.Abs(deltaX) > Math.Abs(deltaY))
                     {
-                        case Direction.Left:
-                            frames = WALK_LEFT_FRAMES;
-                            break;
-                        case Direction.Right:
-                            frames = WALK_RIGHT_FRAMES;
-                            break;
-                        case Direction.Up:
-                            frames = WALK_UP_FRAMES.Count > 0 ? WALK_UP_FRAMES : WALK_RIGHT_FRAMES;
-                            break;
-                        case Direction.Down:
-                            frames = WALK_DOWN_FRAMES.Count > 0 ? WALK_DOWN_FRAMES : WALK_LEFT_FRAMES;
-                            break;
-                        default:
-                            frames = WALK_RIGHT_FRAMES;
-                            break;
+                        frames = deltaX > 0 ? WALK_RIGHT_FRAMES : WALK_LEFT_FRAMES;
+                        if (deltaX > 0)
+                        {
+                            CURRENT_DIRECTION = Direction.Right;
+                        }
+                        else
+                        {
+                            CURRENT_DIRECTION = Direction.Left;
+                        }
+                        //CURRENT_DIRECTION = deltaX > 0 ? Direction.Right : Direction.Left;
                     }
-
+                    else
+                    {
+                        frames = deltaY > 0 ? WALK_DOWN_FRAMES : WALK_UP_FRAMES;
+                        CURRENT_DIRECTION = deltaY > 0 ? Direction.Down : Direction.Up;
+                    }
+                    UpdateLabelPosition();
                     if (frames.Count > 0)
                     {
                         SpriteImage.Source = frames[CURRENT_WALK_FRAME];
                         CURRENT_WALK_FRAME = (CURRENT_WALK_FRAME + 1) % frames.Count;
                     }
                 }
+
             };
 
-            // Drag Animation
+            // DRAGGGGG
             DRAG_TIMER = new DispatcherTimer();
-            DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(60);
+            DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(120);
             DRAG_TIMER.Tick += (s, e) =>
             {
                 if (IS_DRAGGING && DRAG_FRAMES.Count > 0)
@@ -243,6 +254,7 @@ namespace Desktop_Gremlin
                     SpriteImage.Source = DRAG_FRAMES[CURRENT_DRAG_FRAME];
                     CURRENT_DRAG_FRAME = (CURRENT_DRAG_FRAME + 1) % DRAG_FRAMES.Count;
                 }
+                UpdateLabelPosition();
             };
 
             // Start timers (they will be conditionally used)
@@ -250,7 +262,16 @@ namespace Desktop_Gremlin
             WALK_TIMER.Start();
             DRAG_TIMER.Start();
         }
-
+        private void UpdateLabelPosition()
+        {
+            double offsetX = this.Width / 2 - SpriteLabel.ActualWidth / 2;
+            string debugText = "offset:" + offsetX.ToString() + "\n"
+                + "Left: " + this.Left.ToString() + "\n"
+                + "Up: " + this.Top.ToString() + "\n"
+                + "DeltaX: " + deltaX.ToString() + "\n"
+                + "DeltaY: " + deltaY.ToString() + "\n";
+            SpriteLabel.Content = debugText;
+        }
 
         private void PositionBottomLeft()
         {
