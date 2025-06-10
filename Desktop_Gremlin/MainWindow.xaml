@@ -5,24 +5,44 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Desktop_Gremlin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="115" Width="185"
+        Title="MainWindow" Height="145" Width="185"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        ResizeMode="NoResize" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
-    <Canvas MouseLeftButtonDown="Canvas_MouseLeftButtonDown" >
+        ResizeMode="NoResize" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp" BorderThickness="0" BorderBrush="Black">
+    <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" >
         <Image Name="SpriteImage"
            Width="80" Height="80"
            HorizontalAlignment="Left"
-           VerticalAlignment="Center"
-           Source="Sprites/Idle/0.png" Canvas.Top="20"/>
+           VerticalAlignment="Top"
+           Source="Sprites/Idle/0.png" Canvas.Top="20"  Margin="5,65,0,0"/>
         <Label x:Name="SpriteLabel"
-           Content="test"
+           Content=""
            Background="Transparent"
            Foreground="White"
            FontWeight="Bold"
            FontSize="14"
-           VerticalContentAlignment="Center" RenderTransformOrigin="-0.145,-0.349" HorizontalAlignment="Left" VerticalAlignment="Center" Width="135" Canvas.Left="45" Canvas.Top="6"/>
-    </Canvas>
+           VerticalContentAlignment="Center" RenderTransformOrigin="-0.145,-0.349" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Canvas.Left="45" Canvas.Top="6" Margin="80,1,0,0"/>
+        <Border x:Name="SpeechBubbleBorder"
+            Background="Black"
+            BorderBrush="White"
+            BorderThickness="1.5"
+            Width="100" Height="74"
+            Padding="5"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Visibility="Collapsed"
+            RenderTransformOrigin="0,0" Margin="48,8,0,0"
+>
+            <TextBlock x:Name="SpriteSpeech"
+                   Text=""
+                   Foreground="White"
+                   FontWeight="Bold"
+                   FontSize="15"
+                   FontFamily="Agency FB"
+                   TextWrapping="Wrap"/>
+        </Border>
+
+    </Grid>
 </Window>

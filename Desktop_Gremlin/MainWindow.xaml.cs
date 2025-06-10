@@ -7,7 +7,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-
+using System.Runtime.InteropServices;
+using System.Windows.Media.Animation;
 namespace Desktop_Gremlin
 {
     public partial class MainWindow : Window
@@ -22,6 +23,7 @@ namespace Desktop_Gremlin
         private DispatcherTimer IDLE_TIMER;
         private DispatcherTimer WALK_TIMER;
         private DispatcherTimer DRAG_TIMER;
+        private DispatcherTimer TYPING_TIMER;
 
         private int CURRENT_IDLE_FRAME = 0;
         private int CURRENT_DRAG_FRAME = 0;
@@ -37,7 +39,7 @@ namespace Desktop_Gremlin
             Up,
             Down
         }
-        private Direction CURRENT_DIRECTION = Direction.Right;
+        private Direction CURRENT_DIRECTION;
         private double SPEED = 10.0;
 
         private bool MOVE_LEFT = false;
@@ -45,9 +47,24 @@ namespace Desktop_Gremlin
         private bool MOVE_UP = false;
         private bool MOVE_DOWN = false;
 
+        private DispatcherTimer TYPEWRITER_TIMER;
+        private string FULL_SPEECH_TEXT = "";
+        private int TYPING_INDEX = 0;
+
         private double deltaX = 0;
         private double deltaY = 0;
+        private bool WALK_TO_CURSOR = false;
+        private bool ALLOW_WALK_TO_CURSOR = false;
+        private Point TARGET_POSITION;
+        private Point LAST_CURSOR_POSITION;
+        private DateTime LAST_CURSOR_MOVE_TIME;
+        private bool IS_SPEAKING = false;
 
+        private double BUBBLE_WIDTH = 125; // Your target width
+
+
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
         public MainWindow()
         {
             InitializeComponent();
@@ -57,7 +74,11 @@ namespace Desktop_Gremlin
             LoadWalkFrames();
             InitializeAnimationTimers();
         }
-
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+        }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -84,6 +105,27 @@ namespace Desktop_Gremlin
                 MOVE_DOWN = true;
                 IS_WALKING = true;
                 CURRENT_DIRECTION = Direction.Down;
+            }
+            else if (e.Key == Key.Space)
+            {
+                if (!ALLOW_WALK_TO_CURSOR)
+                {
+                    ALLOW_WALK_TO_CURSOR = true;
+                }
+                else
+                {
+                    ALLOW_WALK_TO_CURSOR = false;
+                    IS_WALKING = false;
+                    WALK_TO_CURSOR = false;
+                }
+            }
+            else if(e.Key == Key.Tab)
+            {
+                if (IS_SPEAKING == false)
+                {
+                    IS_SPEAKING = true; 
+                    ShowSpeech("Hello! I'm your desktop gremlin!");
+                }                  
             }
         }
 
@@ -175,16 +217,32 @@ namespace Desktop_Gremlin
         }
         private void InitializeAnimationTimers()
         {
+
+
             // IDLING
             IDLE_TIMER = new DispatcherTimer();
             IDLE_TIMER.Interval = TimeSpan.FromMilliseconds(300);
             IDLE_TIMER.Tick += (s, e) =>
             {
-                if (!IS_WALKING && !IS_DRAGGING && IDLE_FRAMES.Count > 0)
+
+                if (!IS_WALKING && !IS_DRAGGING && !WALK_TO_CURSOR && IDLE_FRAMES.Count > 0)
                 {
                     SpriteImage.Source = IDLE_FRAMES[CURRENT_IDLE_FRAME];
                     CURRENT_IDLE_FRAME = (CURRENT_IDLE_FRAME + 1) % IDLE_FRAMES.Count;
                     SpriteImage.RenderTransform = new ScaleTransform(1, 1);
+                }
+            };
+
+            DRAG_TIMER = new DispatcherTimer();
+            DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(120);
+            DRAG_TIMER.Tick += (s, e) =>
+            {
+                if (IS_DRAGGING && DRAG_FRAMES.Count > 0)
+                {
+                    SpriteImage.Source = DRAG_FRAMES[CURRENT_DRAG_FRAME];
+                    CURRENT_DRAG_FRAME = (CURRENT_DRAG_FRAME + 1) % DRAG_FRAMES.Count;
+                    ALLOW_WALK_TO_CURSOR = false;
+                    WALK_TO_CURSOR = false;
                 }
             };
 
@@ -234,43 +292,194 @@ namespace Desktop_Gremlin
                         frames = deltaY > 0 ? WALK_DOWN_FRAMES : WALK_UP_FRAMES;
                         CURRENT_DIRECTION = deltaY > 0 ? Direction.Down : Direction.Up;
                     }
-                    UpdateLabelPosition();
                     if (frames.Count > 0)
                     {
                         SpriteImage.Source = frames[CURRENT_WALK_FRAME];
                         CURRENT_WALK_FRAME = (CURRENT_WALK_FRAME + 1) % frames.Count;
                     }
                 }
-
-            };
-
-            // DRAGGGGG
-            DRAG_TIMER = new DispatcherTimer();
-            DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(120);
-            DRAG_TIMER.Tick += (s, e) =>
-            {
-                if (IS_DRAGGING && DRAG_FRAMES.Count > 0)
+                if (ALLOW_WALK_TO_CURSOR)
                 {
-                    SpriteImage.Source = DRAG_FRAMES[CURRENT_DRAG_FRAME];
-                    CURRENT_DRAG_FRAME = (CURRENT_DRAG_FRAME + 1) % DRAG_FRAMES.Count;
-                }
-                UpdateLabelPosition();
+                    GetCursorPos(out POINT cursorPos);
+                    Point currentCursorPos = new Point(cursorPos.X - this.Width / 2, cursorPos.Y - this.Height / 2);
+
+                    if ((currentCursorPos - LAST_CURSOR_POSITION).Length > 1)
+                    {
+                        // Cursor moved
+                        LAST_CURSOR_POSITION = currentCursorPos;
+                        LAST_CURSOR_MOVE_TIME = DateTime.Now;
+                        TARGET_POSITION = currentCursorPos;
+                        WALK_TO_CURSOR = true;
+                    }
+                 
+                    SetTargetToCursor();
+                    Vector toTarget = TARGET_POSITION - new Point(this.Left, this.Top);
+                    double distance = toTarget.Length;
+                    if (WALK_TO_CURSOR)
+                    {
+
+                        if (distance < SPEED)
+                        {
+                            // Stop walking if close enough
+                            WALK_TO_CURSOR = false;
+                            IS_WALKING = false;
+                        }
+                        else
+                        {
+                            toTarget.Normalize();
+                            deltaX = toTarget.X * SPEED;
+                            deltaY = toTarget.Y * SPEED;
+
+                            this.Left += deltaX;
+                            this.Top += deltaY;
+
+                            // Choose frame direction
+                            if (Math.Abs(deltaX) > Math.Abs(deltaY))
+                                CURRENT_DIRECTION = deltaX > 0 ? Direction.Right : Direction.Left;
+                            else
+                                CURRENT_DIRECTION = deltaY > 0 ? Direction.Down : Direction.Up;
+
+                            List<BitmapImage> frames;
+
+                            switch (CURRENT_DIRECTION)
+                            {
+                                case Direction.Left:
+                                    frames = WALK_LEFT_FRAMES;
+                                    break;
+                                case Direction.Right:
+                                    frames = WALK_RIGHT_FRAMES;
+                                    break;
+                                case Direction.Up:
+                                    frames = WALK_UP_FRAMES;
+                                    break;
+                                case Direction.Down:
+                                    frames = WALK_DOWN_FRAMES;
+                                    break;
+                                default:
+                                    frames = WALK_RIGHT_FRAMES;
+                                    break;
+                            }
+
+                            if (frames.Count > 0)
+                            {
+                                SpriteImage.Source = frames[CURRENT_WALK_FRAME];
+                                CURRENT_WALK_FRAME = (CURRENT_WALK_FRAME + 1) % frames.Count;
+                            }
+                        }
+                    }
+                }       
+
             };
 
-            // Start timers (they will be conditionally used)
+
             IDLE_TIMER.Start();
             WALK_TIMER.Start();
             DRAG_TIMER.Start();
         }
-        private void UpdateLabelPosition()
+        private void StartTyping(string message, int speedMs = 50)
         {
-            double offsetX = this.Width / 2 - SpriteLabel.ActualWidth / 2;
-            string debugText = "offset:" + offsetX.ToString() + "\n"
-                + "Left: " + this.Left.ToString() + "\n"
-                + "Up: " + this.Top.ToString() + "\n"
-                + "DeltaX: " + deltaX.ToString() + "\n"
-                + "DeltaY: " + deltaY.ToString() + "\n";
-            SpriteLabel.Content = debugText;
+            FULL_SPEECH_TEXT = message;
+            TYPING_INDEX = 0;
+            SpriteSpeech.Text = "";
+
+            if (TYPEWRITER_TIMER != null)
+                TYPEWRITER_TIMER.Stop();
+
+            TYPEWRITER_TIMER = new DispatcherTimer();
+            TYPEWRITER_TIMER.Interval = TimeSpan.FromMilliseconds(speedMs);
+            TYPEWRITER_TIMER.Tick += (s, e) =>
+            {
+                if (TYPING_INDEX < FULL_SPEECH_TEXT.Length)
+                {
+                    SpriteSpeech.Text = (string)SpriteSpeech.Text + FULL_SPEECH_TEXT[TYPING_INDEX];
+                    TYPING_INDEX++;
+                }
+                else
+                { 
+                    TYPEWRITER_TIMER.Stop();
+                }
+            };
+
+            TYPEWRITER_TIMER.Start();
+        }
+        public void HideSpeech()
+        {
+            var shrinkAnimation = new DoubleAnimation
+            {
+                From = BUBBLE_WIDTH,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(250),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+            };
+
+            shrinkAnimation.Completed += (s, e) =>
+            {
+                SpeechBubbleBorder.Visibility = Visibility.Collapsed;
+                SpriteSpeech.Text = "";
+                 IS_SPEAKING = false;
+            };
+
+            SpeechBubbleBorder.BeginAnimation(Border.WidthProperty, shrinkAnimation);
+        }
+       
+        public void ShowSpeech(string message)
+        {
+            FULL_SPEECH_TEXT = message;
+            TYPING_INDEX = 0;
+            SpriteSpeech.Text = "";
+
+            SpeechBubbleBorder.Visibility = Visibility.Visible;
+
+            var expandAnimation = new DoubleAnimation
+            {
+                From = 0,
+                To = BUBBLE_WIDTH,
+                Duration = TimeSpan.FromMilliseconds(300),
+                EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseOut }
+            };
+
+            expandAnimation.Completed += (s, e) => StartTyping();
+
+            SpeechBubbleBorder.BeginAnimation(Border.WidthProperty, expandAnimation);
+        }
+        private void StartTyping()
+        {
+            TYPING_TIMER = new DispatcherTimer();
+            TYPING_TIMER.Interval = TimeSpan.FromMilliseconds(40);
+            TYPING_TIMER.Tick += (s, e) =>
+            {
+                if (TYPING_INDEX < FULL_SPEECH_TEXT.Length)
+                {
+                    SpriteSpeech.Text += FULL_SPEECH_TEXT[TYPING_INDEX];
+                    TYPING_INDEX++;
+                }
+                else
+                {
+                    TYPING_TIMER.Stop();
+                }
+            };
+            TYPING_TIMER.Start();
+
+            DispatcherTimer autoClose = new DispatcherTimer();
+            autoClose.Interval = TimeSpan.FromSeconds(5);
+            autoClose.Tick += (s, e) =>
+            {
+                HideSpeech();
+                autoClose.Stop();
+            };
+            autoClose.Start();
+        }
+
+        private void SetTargetToCursor()
+        {
+            GetCursorPos(out POINT pos);
+
+            // Offset to center the gremlin around cursor
+            double targetX = pos.X - this.Width / 2;
+            double targetY = pos.Y - this.Height / 2;
+
+            TARGET_POSITION = new Point(targetX, targetY);
+            WALK_TO_CURSOR = true;
         }
 
         private void PositionBottomLeft()
