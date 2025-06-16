@@ -19,19 +19,29 @@ namespace Desktop_Gremlin
         private List<BitmapImage> WALK_RIGHT_FRAMES = new List<BitmapImage>();
         private List<BitmapImage> WALK_UP_FRAMES = new List<BitmapImage>();
         private List<BitmapImage> WALK_DOWN_FRAMES = new List<BitmapImage>();
+        private List<BitmapImage> EMOTE1_FRAMES = new List<BitmapImage>();  
+        private List<BitmapImage> INTRO_FRAMES = new List<BitmapImage>();   
 
+        private DispatcherTimer INTRO_TIMER;
         private DispatcherTimer IDLE_TIMER;
         private DispatcherTimer WALK_TIMER;
         private DispatcherTimer DRAG_TIMER;
         private DispatcherTimer TYPING_TIMER;
+        private DispatcherTimer EMOTE1_TIMER;
 
         private int CURRENT_IDLE_FRAME = 0;
         private int CURRENT_DRAG_FRAME = 0;
         private int CURRENT_WALK_FRAME = 0;
+        private int CURRENT_EMOTE1_FRAME = 0;
+        private int CURRENT_INTRO_FRAME = 0;    
+
+
+        private bool IS_INTRO = true;
         private bool IS_WALKING = false;
         private bool IS_DRAGGING = false;
         private bool LAST_DRAG_STATE = false;
         private bool LAST_STATE_DRAG_OR_WALK = false;
+        private bool IS_EMOTING1 = false;
         public enum Direction
         {
             Left,
@@ -42,25 +52,31 @@ namespace Desktop_Gremlin
         private Direction CURRENT_DIRECTION;
         private double SPEED = 10.0;
 
+        //Strictly for mouse movement
+        //Currently working on how to adjust the sprite to move with mouse
+        //V.2
         private bool MOVE_LEFT = false;
         private bool MOVE_RIGHT = false;
         private bool MOVE_UP = false;
         private bool MOVE_DOWN = false;
+        private bool WALK_TO_CURSOR = false;
+        private bool ALLOW_WALK_TO_CURSOR = false;
+        private double MOUSE_DELTAX = 0;
+        private double MOUSE_DELTAY = 0;
+        private Point TARGET_POSITION;
+        private Point LAST_CURSOR_POSITION;
+        private DateTime LAST_CURSOR_MOVE_TIME;
+
+
 
         private DispatcherTimer TYPEWRITER_TIMER;
         private string FULL_SPEECH_TEXT = "";
         private int TYPING_INDEX = 0;
 
-        private double deltaX = 0;
-        private double deltaY = 0;
-        private bool WALK_TO_CURSOR = false;
-        private bool ALLOW_WALK_TO_CURSOR = false;
-        private Point TARGET_POSITION;
-        private Point LAST_CURSOR_POSITION;
-        private DateTime LAST_CURSOR_MOVE_TIME;
+
         private bool IS_SPEAKING = false;
 
-        private double BUBBLE_WIDTH = 125; // Your target width
+        private double BUBBLE_WIDTH = 125; 
 
 
         [DllImport("user32.dll")]
@@ -72,6 +88,7 @@ namespace Desktop_Gremlin
             LoadIdleFrames();
             LoadDragFrames();
             LoadWalkFrames();
+            LoadEmote1();
             InitializeAnimationTimers();
         }
         public struct POINT
@@ -119,6 +136,17 @@ namespace Desktop_Gremlin
                     WALK_TO_CURSOR = false;
                 }
             }
+            else if(e.Key == Key.Z)
+            {
+                if (!IS_EMOTING1)
+                {
+                    IS_EMOTING1 = true; 
+                }
+                else
+                {
+                    IS_EMOTING1 = false;
+                }
+            }
             else if(e.Key == Key.Tab)
             {
                 if (IS_SPEAKING == false)
@@ -137,6 +165,11 @@ namespace Desktop_Gremlin
             if (e.Key == Key.Down) MOVE_DOWN = false;
             IS_WALKING = MOVE_LEFT || MOVE_RIGHT || MOVE_DOWN || MOVE_UP;
         }
+        private void LoadIntroFrames()
+        {
+            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sprites", "Intro");
+            INTRO_FRAMES = LoadFramesFromFolder(path, "Frame Folder");
+        }
         private void LoadIdleFrames()
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sprites", "Idle");
@@ -148,6 +181,12 @@ namespace Desktop_Gremlin
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sprites", "Drag");
             DRAG_FRAMES = LoadFramesFromFolder(path, "Drag folder");
         }
+        private void LoadEmote1()
+        {
+            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sprites", "Emotes", "Emotes1");
+            EMOTE1_FRAMES = LoadFramesFromFolder(path, "Emote folder");
+        }
+
         private void LoadWalkFrames()
         {
             string basePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sprites", "Walk");
@@ -217,18 +256,45 @@ namespace Desktop_Gremlin
         }
         private void InitializeAnimationTimers()
         {
+            //INTRO_TIMER = new DispatcherTimer();
+            //INTRO_TIMER.Interval = TimeSpan.FromMilliseconds(300);
+            //INTRO_TIMER.Tick += (s, e) =>
+            //{
+            //    if(IS_INTRO)
+            //    {
+            //        SpriteImage.Source = INTRO_FRAMES[CURRENT_INTRO_FRAME];
+            //        CURRENT_IDLE_FRAME = (CURRENT_IDLE_FRAME + 1) % IDLE_FRAMES.Count;
+            //        if(CURRENT_IDLE_FRAME == IDLE_FRAMES.Count - 1)
+            //        {
+            //            IS_INTRO = false;
+            //        } 
+            //        SpriteImage.RenderTransform = new ScaleTransform(1, 1);
+            //    }
+            //};
 
 
-            // IDLING
+
             IDLE_TIMER = new DispatcherTimer();
             IDLE_TIMER.Interval = TimeSpan.FromMilliseconds(300);
             IDLE_TIMER.Tick += (s, e) =>
             {
 
-                if (!IS_WALKING && !IS_DRAGGING && !WALK_TO_CURSOR && IDLE_FRAMES.Count > 0)
+                if (!IS_WALKING && !IS_DRAGGING && !WALK_TO_CURSOR && !IS_EMOTING1 && IDLE_FRAMES.Count > 0)
                 {
                     SpriteImage.Source = IDLE_FRAMES[CURRENT_IDLE_FRAME];
                     CURRENT_IDLE_FRAME = (CURRENT_IDLE_FRAME + 1) % IDLE_FRAMES.Count;
+                    SpriteImage.RenderTransform = new ScaleTransform(1, 1);
+                }
+            };
+
+            EMOTE1_TIMER = new DispatcherTimer();
+            EMOTE1_TIMER.Interval = TimeSpan.FromMilliseconds(200);
+            EMOTE1_TIMER.Tick += (s, e) =>
+            {
+                if (!WALK_TO_CURSOR && !IS_DRAGGING && !IS_WALKING &&IS_EMOTING1 && EMOTE1_FRAMES.Count > 0)
+                {
+                    SpriteImage.Source = EMOTE1_FRAMES[CURRENT_EMOTE1_FRAME];
+                    CURRENT_EMOTE1_FRAME = (CURRENT_EMOTE1_FRAME + 1) % EMOTE1_FRAMES.Count;
                     SpriteImage.RenderTransform = new ScaleTransform(1, 1);
                 }
             };
@@ -246,38 +312,36 @@ namespace Desktop_Gremlin
                 }
             };
 
-            // WALKING 
             WALK_TIMER = new DispatcherTimer();
             WALK_TIMER.Interval = TimeSpan.FromMilliseconds(60);
             WALK_TIMER.Tick += (s, e) =>
             {
                 if (IS_WALKING)
                 {
-                    deltaX = 0;
-                    deltaY = 0;
+                    MOUSE_DELTAX = 0;
+                    MOUSE_DELTAY = 0;
 
 
-                    if (MOVE_LEFT) deltaX -= SPEED;
-                    if (MOVE_RIGHT) deltaX += SPEED;
-                    if (MOVE_UP) deltaY -= SPEED;
-                    if (MOVE_DOWN) deltaY += SPEED;
+                    if (MOVE_LEFT) MOUSE_DELTAX -= SPEED;
+                    if (MOVE_RIGHT) MOUSE_DELTAX += SPEED;
+                    if (MOVE_UP) MOUSE_DELTAY -= SPEED;
+                    if (MOVE_DOWN) MOUSE_DELTAY += SPEED;
 
-                    if (deltaX != 0 && deltaY != 0)
+                    if (MOUSE_DELTAX != 0 && MOUSE_DELTAY != 0)
                     {
-                        double length = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
-                        deltaX = (deltaX / length) * SPEED;
-                        deltaY = (deltaY / length) * SPEED;
+                        double length = Math.Sqrt(MOUSE_DELTAX * MOUSE_DELTAX + MOUSE_DELTAY * MOUSE_DELTAY);
+                        MOUSE_DELTAX = (MOUSE_DELTAX / length) * SPEED;
+                        MOUSE_DELTAY = (MOUSE_DELTAY / length) * SPEED;
                     }
 
-                    //this.Left = Clamp(this.Left + deltaX, 0, SystemParameters.PrimaryScreenWidth - this.Width);
-                    //this.Top = Clamp(this.Top + deltaY, 0, SystemParameters.PrimaryScreenHeight - this.Height);
-                    this.Left = this.Left + deltaX;
-                    this.Top = this.Top + deltaY;
+                    this.Left = Clamp(this.Left + MOUSE_DELTAX, 0, SystemParameters.PrimaryScreenWidth - this.Width);
+                    this.Top = Clamp(this.Top + MOUSE_DELTAY, 0, SystemParameters.PrimaryScreenHeight - this.Height);
+
                     List<BitmapImage> frames;
-                    if (Math.Abs(deltaX) > Math.Abs(deltaY))
+                    if (Math.Abs(MOUSE_DELTAX) > Math.Abs(MOUSE_DELTAY))
                     {
-                        frames = deltaX > 0 ? WALK_RIGHT_FRAMES : WALK_LEFT_FRAMES;
-                        if (deltaX > 0)
+                        frames = MOUSE_DELTAX > 0 ? WALK_RIGHT_FRAMES : WALK_LEFT_FRAMES;
+                        if (MOUSE_DELTAX > 0)
                         {
                             CURRENT_DIRECTION = Direction.Right;
                         }
@@ -289,8 +353,8 @@ namespace Desktop_Gremlin
                     }
                     else
                     {
-                        frames = deltaY > 0 ? WALK_DOWN_FRAMES : WALK_UP_FRAMES;
-                        CURRENT_DIRECTION = deltaY > 0 ? Direction.Down : Direction.Up;
+                        frames = MOUSE_DELTAY > 0 ? WALK_DOWN_FRAMES : WALK_UP_FRAMES;
+                        CURRENT_DIRECTION = MOUSE_DELTAY > 0 ? Direction.Down : Direction.Up;
                     }
                     if (frames.Count > 0)
                     {
@@ -327,17 +391,17 @@ namespace Desktop_Gremlin
                         else
                         {
                             toTarget.Normalize();
-                            deltaX = toTarget.X * SPEED;
-                            deltaY = toTarget.Y * SPEED;
+                            MOUSE_DELTAX = toTarget.X * SPEED;
+                            MOUSE_DELTAY = toTarget.Y * SPEED;
 
-                            this.Left += deltaX;
-                            this.Top += deltaY;
+                            this.Left += MOUSE_DELTAX;
+                            this.Top += MOUSE_DELTAY;
 
                             // Choose frame direction
-                            if (Math.Abs(deltaX) > Math.Abs(deltaY))
-                                CURRENT_DIRECTION = deltaX > 0 ? Direction.Right : Direction.Left;
+                            if (Math.Abs(MOUSE_DELTAX) > Math.Abs(MOUSE_DELTAY))
+                                CURRENT_DIRECTION = MOUSE_DELTAX > 0 ? Direction.Right : Direction.Left;
                             else
-                                CURRENT_DIRECTION = deltaY > 0 ? Direction.Down : Direction.Up;
+                                CURRENT_DIRECTION = MOUSE_DELTAY > 0 ? Direction.Down : Direction.Up;
 
                             List<BitmapImage> frames;
 
@@ -371,37 +435,12 @@ namespace Desktop_Gremlin
 
             };
 
-
+            EMOTE1_TIMER.Start();   
             IDLE_TIMER.Start();
             WALK_TIMER.Start();
             DRAG_TIMER.Start();
         }
-        private void StartTyping(string message, int speedMs = 50)
-        {
-            FULL_SPEECH_TEXT = message;
-            TYPING_INDEX = 0;
-            SpriteSpeech.Text = "";
-
-            if (TYPEWRITER_TIMER != null)
-                TYPEWRITER_TIMER.Stop();
-
-            TYPEWRITER_TIMER = new DispatcherTimer();
-            TYPEWRITER_TIMER.Interval = TimeSpan.FromMilliseconds(speedMs);
-            TYPEWRITER_TIMER.Tick += (s, e) =>
-            {
-                if (TYPING_INDEX < FULL_SPEECH_TEXT.Length)
-                {
-                    SpriteSpeech.Text = (string)SpriteSpeech.Text + FULL_SPEECH_TEXT[TYPING_INDEX];
-                    TYPING_INDEX++;
-                }
-                else
-                { 
-                    TYPEWRITER_TIMER.Stop();
-                }
-            };
-
-            TYPEWRITER_TIMER.Start();
-        }
+      
         public void HideSpeech()
         {
             var shrinkAnimation = new DoubleAnimation
@@ -474,9 +513,9 @@ namespace Desktop_Gremlin
         {
             GetCursorPos(out POINT pos);
 
-            // Offset to center the gremlin around cursor
-            double targetX = pos.X - this.Width / 2;
-            double targetY = pos.Y - this.Height / 2;
+
+            double targetX = Clamp(pos.X - this.Width, 0, SystemParameters.PrimaryScreenWidth - this.Width)             ;
+            double targetY = Clamp(pos.Y - this.Height, 0, SystemParameters.PrimaryScreenHeight - this.Height);
 
             TARGET_POSITION = new Point(targetX, targetY);
             WALK_TO_CURSOR = true;

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Desktop_Gremlin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="145" Width="185"
+        Title="MainWindow" Height="145" Width="205"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -16,7 +16,7 @@
            Width="80" Height="80"
            HorizontalAlignment="Left"
            VerticalAlignment="Top"
-           Source="Sprites/Idle/0.png" Canvas.Top="20"  Margin="5,65,0,0"/>
+           Source="Sprites/Idle/0.png" Canvas.Top="20"  Margin="5,50,0,0"/>
         <Label x:Name="SpriteLabel"
            Content=""
            Background="Transparent"
@@ -33,7 +33,7 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             Visibility="Collapsed"
-            RenderTransformOrigin="0,0" Margin="48,8,0,0"
+            RenderTransformOrigin="0,0" Margin="65,6,0,0"
 >
             <TextBlock x:Name="SpriteSpeech"
                    Text=""
