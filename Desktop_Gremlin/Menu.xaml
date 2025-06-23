@@ -6,34 +6,105 @@
         xmlns:local="clr-namespace:Desktop_Gremlin"
         mc:Ignorable="d"
         Title="Menu" Height="450" Width="800">
-    <Grid Margin="10,10,20,10">
+    <Grid Margin="10,10,10,10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="8*" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Width -->
-        <Label Content="Sprite Width:" Grid.Row="0"/>
-        <TextBox x:Name="WidthBox" Grid.Row="0" Margin="120,0,0,0" Width="100"/>
+        <GroupBox Header="Sprite Settings" Grid.Row="0" Grid.Column="0" Margin="0,0,10,40" Grid.RowSpan="2">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
 
-        <!-- Height -->
-        <Label Content="Sprite Height:" Grid.Row="1"/>
-        <TextBox x:Name="HeightBox" Grid.Row="1" Margin="120,0,0,0" Width="100"/>
+                <Label Content="Sprite Width:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="WidthBox" Grid.Row="0" Grid.Column="1" Height="26"/>
 
-        <!-- Margin Left -->
-        <Label Content="Margin Left (X):" Grid.Row="2"/>
-        <TextBox x:Name="MarginLeftBox" Grid.Row="2" Margin="120,0,0,0" Width="100"/>
+                <Label Content="Sprite Height:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="HeightBox" Grid.Row="1" Grid.Column="1" Height="26"/>
 
-        <!-- Margin Top -->
-        <Label Content="Margin Top (Y):" Grid.Row="3"/>
-        <TextBox x:Name="MarginTopBox" Grid.Row="3" Margin="120,0,0,0" Width="100"/>
+                <Label Content="Margin Left (X):" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="MarginLeftBox" Grid.Row="2" Grid.Column="1" Height="26"/>
 
-        <!-- Save Button -->
-        <Button Content="Save" Grid.Row="4" HorizontalAlignment="Right" Width="80" Margin="0,190,0,0" Click="Save_Click" RenderTransformOrigin="0.438,-0.49" Height="30" VerticalAlignment="Top"/>
-        <Button Content="Open" Grid.Row="4" HorizontalAlignment="Right" Width="80" Margin="0,190,90,0" Click="Open_Click" Height="30" VerticalAlignment="Top"/>
+                <Label Content="Margin Top (Y):" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="MarginTopBox" Grid.Row="3" Grid.Column="1" Height="26"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Main Window Settings" Grid.Row="1" Grid.Column="0" Margin="5,136,5,-96">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Window Width" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="WindowSize" Grid.Row="0" Grid.Column="1" Height="26"/>
+                <Label Content="Sprite Height" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="Window_Trans" Grid.Row="1" Grid.Column="1" Height="26"/>
+
+
+            </Grid>
+        </GroupBox>
+
+        <!-- SPRITE SETTINGS PANEL -->
+        <GroupBox Header="Speech Bubble Settings" Grid.Row="0" Grid.Column="1" Margin="0,0,0,40" Grid.RowSpan="2">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Speech Width:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="SpeechWidthBox" Grid.Row="0" Grid.Column="1" Height="26"/>
+
+                <Label Content="Speech Height:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="SpeechHeightBox" Grid.Row="1" Grid.Column="1" Height="26"/>
+
+                <Label Content="Speech Margin Left (X):" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="SpeechMarginLeftBox" Grid.Row="2" Grid.Column="1" Height="26"/>
+
+                <Label Content="Speech Margin Top (Y):" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+                <TextBox x:Name="SpeechMarginTopBox" Grid.Row="3" Grid.Column="1" Height="26"/>
+
+                <Label Content="Speech Visibility:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="SpeechVisibilityBox" Grid.Row="4" Grid.Column="1" Height="26">
+                    <ComboBoxItem Content="Visible" IsSelected="True"/>
+                    <ComboBoxItem Content="Collapsed"/>
+                </ComboBox>
+            </Grid>
+        </GroupBox>
+
+
+        <!-- SAVE / OPEN BUTTONS -->
+        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Right" Margin="0,247,125,-236" Width="170">
+            <Button Content="Open" Width="80" Height="30" Margin="0,0,10,0" Click="Open_Click"/>
+            <Button Content="Save" Width="80" Height="30" Click="Save_Click"/>
+        </StackPanel>
     </Grid>
 
 </Window>

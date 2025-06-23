@@ -91,7 +91,7 @@ namespace Desktop_Gremlin
             LoadEmote1();
             LoadIntroFrames();
             InitializeAnimationTimers();
-            ApplySpriteSettings();
+            //ApplySpriteSettings();
             ShowSpeech("Wazzup my skididsadsalda;dldsakdjsalkdksadsa");
         }
         public struct POINT
@@ -312,21 +312,21 @@ namespace Desktop_Gremlin
         }
         private void InitializeAnimationTimers()
         {
-            INTRO_TIMER = new DispatcherTimer();
-            INTRO_TIMER.Interval = TimeSpan.FromMilliseconds(300);
-            INTRO_TIMER.Tick += (s, e) =>
-            {
-                if (IS_INTRO)
-                {
-                    SpriteImage.Source = INTRO_FRAMES[CURRENT_INTRO_FRAME];
-                    CURRENT_INTRO_FRAME = (CURRENT_INTRO_FRAME + 1) % INTRO_FRAMES.Count;
-                    if (CURRENT_INTRO_FRAME == INTRO_FRAMES.Count - 1)
-                    {
-                        IS_INTRO = false;
-                    }
-                    SpriteImage.RenderTransform = new ScaleTransform(1, 1);
-                }
-            };
+            //INTRO_TIMER = new DispatcherTimer();
+            //INTRO_TIMER.Interval = TimeSpan.FromMilliseconds(300);
+            //INTRO_TIMER.Tick += (s, e) =>
+            //{
+            //    if (IS_INTRO)
+            //    {
+            //        SpriteImage.Source = INTRO_FRAMES[CURRENT_INTRO_FRAME];
+            //        CURRENT_INTRO_FRAME = (CURRENT_INTRO_FRAME + 1) % INTRO_FRAMES.Count;
+            //        if (CURRENT_INTRO_FRAME == INTRO_FRAMES.Count - 1)
+            //        {
+            //            IS_INTRO = false;
+            //        }
+            //        SpriteImage.RenderTransform = new ScaleTransform(1, 1);
+            //    }
+            //};
 
 
             IDLE_TIMER = new DispatcherTimer();
@@ -334,7 +334,7 @@ namespace Desktop_Gremlin
             IDLE_TIMER.Tick += (s, e) =>
             {
 
-                if (!IS_INTRO && !IS_WALKING && !IS_DRAGGING && !WALK_TO_CURSOR && !IS_EMOTING1 && IDLE_FRAMES.Count > 0)
+                if (!IS_WALKING && !IS_DRAGGING && !WALK_TO_CURSOR && !IS_EMOTING1 && IDLE_FRAMES.Count > 0)
                 {
                     SpriteImage.Source = IDLE_FRAMES[CURRENT_IDLE_FRAME];
                     CURRENT_IDLE_FRAME = (CURRENT_IDLE_FRAME + 1) % IDLE_FRAMES.Count;
@@ -342,17 +342,17 @@ namespace Desktop_Gremlin
                 }
             };
 
-            EMOTE1_TIMER = new DispatcherTimer();
-            EMOTE1_TIMER.Interval = TimeSpan.FromMilliseconds(200);
-            EMOTE1_TIMER.Tick += (s, e) =>
-            {
-                if (!WALK_TO_CURSOR && !IS_DRAGGING && !IS_WALKING &&IS_EMOTING1 && EMOTE1_FRAMES.Count > 0)
-                {
-                    SpriteImage.Source = EMOTE1_FRAMES[CURRENT_EMOTE1_FRAME];
-                    CURRENT_EMOTE1_FRAME = (CURRENT_EMOTE1_FRAME + 1) % EMOTE1_FRAMES.Count;
-                    SpriteImage.RenderTransform = new ScaleTransform(1, 1);
-                }
-            };
+            //EMOTE1_TIMER = new DispatcherTimer();
+            //EMOTE1_TIMER.Interval = TimeSpan.FromMilliseconds(200);
+            //EMOTE1_TIMER.Tick += (s, e) =>
+            //{
+            //    if (!WALK_TO_CURSOR && !IS_DRAGGING && !IS_WALKING &&IS_EMOTING1 && EMOTE1_FRAMES.Count > 0)
+            //    {
+            //        SpriteImage.Source = EMOTE1_FRAMES[CURRENT_EMOTE1_FRAME];
+            //        CURRENT_EMOTE1_FRAME = (CURRENT_EMOTE1_FRAME + 1) % EMOTE1_FRAMES.Count;
+            //        SpriteImage.RenderTransform = new ScaleTransform(1, 1);
+            //    }
+            //};
 
             DRAG_TIMER = new DispatcherTimer();
             DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(120);
@@ -372,7 +372,7 @@ namespace Desktop_Gremlin
             WALK_TIMER.Interval = TimeSpan.FromMilliseconds(60);
             WALK_TIMER.Tick += (s, e) =>
             {
-                if (IS_WALKING)
+                if (IS_WALKING && !ALLOW_WALK_TO_CURSOR)
                 {
                     MOUSE_DELTAX = 0;
                     MOUSE_DELTAY = 0;
@@ -390,9 +390,10 @@ namespace Desktop_Gremlin
                         MOUSE_DELTAY = (MOUSE_DELTAY / length) * SPEED;
                     }
 
-                    this.Left = Clamp(this.Left + MOUSE_DELTAX, 0, SystemParameters.PrimaryScreenWidth - SpriteImage.Width);
-                    this.Top = Clamp(this.Top + MOUSE_DELTAY, 0, SystemParameters.PrimaryScreenHeight - SpriteImage.Height);
-
+                    //this.Left = Clamp(this.Left + MOUSE_DELTAX, 0, SystemParameters.PrimaryScreenWidth - SpriteImage.Width);
+                    //this.Top = Clamp(this.Top + MOUSE_DELTAY, 0, SystemParameters.PrimaryScreenHeight - SpriteImage.Height);
+                    this.Left = this.Left + MOUSE_DELTAX;
+                    this.Top = this.Top + MOUSE_DELTAY;
                     List<BitmapImage> frames;
                     if (Math.Abs(MOUSE_DELTAX) > Math.Abs(MOUSE_DELTAY))
                     {
@@ -487,8 +488,8 @@ namespace Desktop_Gremlin
                 }       
 
             };
-            INTRO_TIMER.Start();
-            EMOTE1_TIMER.Start();   
+            //INTRO_TIMER.Start();
+            //EMOTE1_TIMER.Start();   
             IDLE_TIMER.Start();
             WALK_TIMER.Start();
             DRAG_TIMER.Start();
