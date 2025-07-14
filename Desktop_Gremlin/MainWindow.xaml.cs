@@ -312,21 +312,21 @@ namespace Desktop_Gremlin
         }
         private void InitializeAnimationTimers()
         {
-            //INTRO_TIMER = new DispatcherTimer();
-            //INTRO_TIMER.Interval = TimeSpan.FromMilliseconds(300);
-            //INTRO_TIMER.Tick += (s, e) =>
-            //{
-            //    if (IS_INTRO)
-            //    {
-            //        SpriteImage.Source = INTRO_FRAMES[CURRENT_INTRO_FRAME];
-            //        CURRENT_INTRO_FRAME = (CURRENT_INTRO_FRAME + 1) % INTRO_FRAMES.Count;
-            //        if (CURRENT_INTRO_FRAME == INTRO_FRAMES.Count - 1)
-            //        {
-            //            IS_INTRO = false;
-            //        }
-            //        SpriteImage.RenderTransform = new ScaleTransform(1, 1);
-            //    }
-            //};
+            INTRO_TIMER = new DispatcherTimer();
+            INTRO_TIMER.Interval = TimeSpan.FromMilliseconds(300);
+            INTRO_TIMER.Tick += (s, e) =>
+            {
+                if (IS_INTRO)
+                {
+                    SpriteImage.Source = INTRO_FRAMES[CURRENT_INTRO_FRAME];
+                    CURRENT_INTRO_FRAME = (CURRENT_INTRO_FRAME + 1) % INTRO_FRAMES.Count;
+                    if (CURRENT_INTRO_FRAME == INTRO_FRAMES.Count - 1)
+                    {
+                        IS_INTRO = false;
+                    }
+                    SpriteImage.RenderTransform = new ScaleTransform(1, 1);
+                }
+            };
 
 
             IDLE_TIMER = new DispatcherTimer();
@@ -488,7 +488,7 @@ namespace Desktop_Gremlin
                 }       
 
             };
-            //INTRO_TIMER.Start();
+            INTRO_TIMER.Start();
             //EMOTE1_TIMER.Start();   
             IDLE_TIMER.Start();
             WALK_TIMER.Start();
