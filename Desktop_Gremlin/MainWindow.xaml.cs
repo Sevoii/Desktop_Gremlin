@@ -91,7 +91,6 @@ namespace Desktop_Gremlin
             LoadEmote1();
             LoadIntroFrames();
             InitializeAnimationTimers();
-            //ApplySpriteSettings();
             ShowSpeech("Wazzup my skididsadsalda;dldsakdjsalkdksadsa");
         }
         public struct POINT
@@ -99,60 +98,8 @@ namespace Desktop_Gremlin
             public int X;
             public int Y;
         }
-        public class SpriteConfig
-        {
-            public double Width { get; set; } = 80;
-            public double Height { get; set; } = 80;
-            public double MarginLeft { get; set; } = 15;
-            public double MarginTop { get; set; } = 50;
-        }
-        public SpriteConfig LoadConfig()
-        {
-            string configPath = "Config.txt";
-            var config = new SpriteConfig();
 
-            if (!File.Exists(configPath))
-                return config;
-
-            string[] lines = File.ReadAllLines(configPath);
-
-            foreach (var line in lines)
-            {
-                var parts = line.Split('=');
-                if (parts.Length != 2) continue;
-
-                string key = parts[0].Trim();
-                string value = parts[1].Trim();
-
-                switch (key)
-                {
-                    case "Width":
-                        if (double.TryParse(value, out double w)) config.Width = w;
-                        break;
-                    case "Height":
-                        if (double.TryParse(value, out double h)) config.Height = h;
-                        break;
-                    case "MarginLeft":
-                        if (double.TryParse(value, out double ml)) config.MarginLeft = ml;
-                        break;
-                    case "MarginTop":
-                        if (double.TryParse(value, out double mt)) config.MarginTop = mt;
-                        break;
-                }
-            }
-
-            return config;
-        }
-        private void ApplySpriteSettings()
-        {
-            SpriteConfig config = LoadConfig();
-
-            SpriteImage.Width = config.Width;
-            SpriteImage.Height = config.Height;
-            SpriteImage.Margin = new Thickness(config.MarginLeft, config.MarginTop, 0, 0);
-        }
-
-
+      
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Left)
@@ -313,10 +260,10 @@ namespace Desktop_Gremlin
         private void InitializeAnimationTimers()
         {
             INTRO_TIMER = new DispatcherTimer();
-            INTRO_TIMER.Interval = TimeSpan.FromMilliseconds(300);
+            INTRO_TIMER.Interval = TimeSpan.FromMilliseconds(33); // Make this 300 if using sprite base - Kurt;
             INTRO_TIMER.Tick += (s, e) =>
             {
-                if (IS_INTRO)
+                if (IS_INTRO && !IS_WALKING)
                 {
                     SpriteImage.Source = INTRO_FRAMES[CURRENT_INTRO_FRAME];
                     CURRENT_INTRO_FRAME = (CURRENT_INTRO_FRAME + 1) % INTRO_FRAMES.Count;
@@ -330,11 +277,11 @@ namespace Desktop_Gremlin
 
 
             IDLE_TIMER = new DispatcherTimer();
-            IDLE_TIMER.Interval = TimeSpan.FromMilliseconds(300);
+            IDLE_TIMER.Interval = TimeSpan.FromMilliseconds(33);
             IDLE_TIMER.Tick += (s, e) =>
             {
 
-                if (!IS_WALKING && !IS_DRAGGING && !WALK_TO_CURSOR && !IS_EMOTING1 && IDLE_FRAMES.Count > 0)
+                if (!IS_WALKING && !IS_DRAGGING && !WALK_TO_CURSOR && !IS_INTRO && IDLE_FRAMES.Count > 0)
                 {
                     SpriteImage.Source = IDLE_FRAMES[CURRENT_IDLE_FRAME];
                     CURRENT_IDLE_FRAME = (CURRENT_IDLE_FRAME + 1) % IDLE_FRAMES.Count;
@@ -342,20 +289,8 @@ namespace Desktop_Gremlin
                 }
             };
 
-            //EMOTE1_TIMER = new DispatcherTimer();
-            //EMOTE1_TIMER.Interval = TimeSpan.FromMilliseconds(200);
-            //EMOTE1_TIMER.Tick += (s, e) =>
-            //{
-            //    if (!WALK_TO_CURSOR && !IS_DRAGGING && !IS_WALKING &&IS_EMOTING1 && EMOTE1_FRAMES.Count > 0)
-            //    {
-            //        SpriteImage.Source = EMOTE1_FRAMES[CURRENT_EMOTE1_FRAME];
-            //        CURRENT_EMOTE1_FRAME = (CURRENT_EMOTE1_FRAME + 1) % EMOTE1_FRAMES.Count;
-            //        SpriteImage.RenderTransform = new ScaleTransform(1, 1);
-            //    }
-            //};
-
             DRAG_TIMER = new DispatcherTimer();
-            DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(120);
+            DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(33);
             DRAG_TIMER.Tick += (s, e) =>
             {
                 if (IS_DRAGGING && DRAG_FRAMES.Count > 0)
@@ -369,7 +304,7 @@ namespace Desktop_Gremlin
             };
 
             WALK_TIMER = new DispatcherTimer();
-            WALK_TIMER.Interval = TimeSpan.FromMilliseconds(60);
+            WALK_TIMER.Interval = TimeSpan.FromMilliseconds(33);
             WALK_TIMER.Tick += (s, e) =>
             {
                 if (IS_WALKING && !ALLOW_WALK_TO_CURSOR)

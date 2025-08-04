@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Desktop_Gremlin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="145" Width="235"
+        Title="MainWindow" Height="180" Width="305"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -13,10 +13,10 @@
         ResizeMode="NoResize" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp" BorderThickness="0" BorderBrush="Black">
     <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" >
         <Image Name="SpriteImage"
-           Width="80" Height="80"
+           Width="140" Height="150"
            HorizontalAlignment="Left"
            VerticalAlignment="Top"
-           Canvas.Top="20"  Margin="15,50,0,0"/>
+           Canvas.Top="20"  Margin="10,10,0,0"/>
         <Label x:Name="SpriteLabel"
            Content=""
            Background="Transparent"
@@ -29,6 +29,7 @@
                 BorderBrush="White"
                 BorderThickness="1.5"
                 Width="120" Height="74"
+                Opacity="0"
                 Padding="5"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
