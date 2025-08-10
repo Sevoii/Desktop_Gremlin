@@ -12,6 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Runtime.InteropServices;
+using System.Windows.Media.Animation;
+using static Desktop_Gremlin.MainWindow;
 
 namespace Desktop_Gremlin
 {
@@ -42,6 +45,13 @@ namespace Desktop_Gremlin
         private bool LAST_STATE_DRAG_OR_WALK = false;
         private bool IS_EMOTING1 = false;
 
+
+
+        private int CURRENT_WALK_LEFT_FRAME = 0;
+        private int CURRENT_WALK_RIGHT_FRAME = 0;
+        private int CURRENT_WALK_UP_FRAME = 0;
+        private int CURRENT_WALK_DOWN_FRAME = 0;
+
         private bool MOVE_LEFT = false;
         private bool MOVE_RIGHT = false;
         private bool MOVE_UP = false;
@@ -53,7 +63,16 @@ namespace Desktop_Gremlin
         private Point TARGET_POSITION;
         private Point LAST_CURSOR_POSITION;
         private DateTime LAST_CURSOR_MOVE_TIME;
+        private double SPEED = 10.0;
 
+        public enum Direction
+        {
+            Left,
+            Right,
+            Up,
+            Down
+        }
+        private Direction CURRENT_DIRECTION;
 
         public MainAnimation()
         {
@@ -79,19 +98,19 @@ namespace Desktop_Gremlin
                     SpriteImage.RenderTransform = new ScaleTransform(1, 1);
                 }
             };
-            //DRAG_TIMER = new DispatcherTimer();
-            //DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(33);
-            //DRAG_TIMER.Tick += (s, e) =>
-            //{
-            //    if (IS_DRAGGING && SPRITE_LOADER.Count > 0)
-            //    {
-            //        SpriteImage.Source = SPRITE_LOADER.DRAG_FRAMES[CURRENT_DRAG_FRAME];
-            //        CURRENT_DRAG_FRAME = (CURRENT_DRAG_FRAME + 1) % SPRITE_LOADER.DRAG_FRAMES.Count;
-            //        ALLOW_WALK_TO_CURSOR = false;
-            //        WALK_TO_CURSOR = false;
-            //        IS_INTRO = false;
-            //    }
-            //};
+            DRAG_TIMER = new DispatcherTimer();
+            DRAG_TIMER.Interval = TimeSpan.FromMilliseconds(33);
+            DRAG_TIMER.Tick += (s, e) =>
+            {
+                if (IS_DRAGGING && SPRITE_LOADER.DRAG_FRAMES.Count > 0)
+                {
+                    SpriteImage.Source = SPRITE_LOADER.DRAG_FRAMES[CURRENT_DRAG_FRAME];
+                    CURRENT_DRAG_FRAME = (CURRENT_DRAG_FRAME + 1) % SPRITE_LOADER.DRAG_FRAMES.Count;
+                    ALLOW_WALK_TO_CURSOR = false;
+                    WALK_TO_CURSOR = false;
+                    IS_INTRO = false;
+                }
+            };
             IDLE_TIMER = new DispatcherTimer();
             IDLE_TIMER.Interval = TimeSpan.FromMilliseconds(33);
             IDLE_TIMER.Tick += (s, e) =>
@@ -102,10 +121,102 @@ namespace Desktop_Gremlin
                     SpriteImage.Source = SPRITE_LOADER.IDLE_FRAMES[CURRENT_IDLE_FRAME];
                     CURRENT_IDLE_FRAME = (CURRENT_IDLE_FRAME + 1) % SPRITE_LOADER.IDLE_FRAMES.Count;
                     SpriteImage.RenderTransform = new ScaleTransform(1, 1);
+              
+                }
+            };
+            WALK_TIMER = new DispatcherTimer();
+            WALK_TIMER.Interval = TimeSpan.FromMilliseconds(33);
+            WALK_TIMER.Tick += (s, e) =>
+            {
+                if (IS_WALKING && !ALLOW_WALK_TO_CURSOR)
+                {
+                    MOUSE_DELTAX = 0;
+                    MOUSE_DELTAY = 0;
+
+
+                    if (MOVE_LEFT) MOUSE_DELTAX -= SPEED;
+                    if (MOVE_RIGHT) MOUSE_DELTAX += SPEED;
+                    if (MOVE_UP) MOUSE_DELTAY -= SPEED;
+                    if (MOVE_DOWN) MOUSE_DELTAY += SPEED;
+
+                    if (MOUSE_DELTAX != 0 && MOUSE_DELTAY != 0)
+                    {
+                        double length = Math.Sqrt(MOUSE_DELTAX * MOUSE_DELTAX + MOUSE_DELTAY * MOUSE_DELTAY);
+                        MOUSE_DELTAX = (MOUSE_DELTAX / length) * SPEED;
+                        MOUSE_DELTAY = (MOUSE_DELTAY / length) * SPEED;
+                    }
+
+     
+                    this.Left = this.Left + MOUSE_DELTAX;
+                    this.Top = this.Top + MOUSE_DELTAY;
+
+                    if (!MOVE_LEFT && !MOVE_RIGHT && !MOVE_UP && !MOVE_DOWN)
+                        return;
+
+                    List<BitmapImage> frames;
+                    BitmapImage nextFrame = null;
+
+                    if (Math.Abs(MOUSE_DELTAX) > Math.Abs(MOUSE_DELTAY))
+                    {
+                        if (MOUSE_DELTAX > 0)
+                        {
+                            frames = SPRITE_LOADER.WALK_RIGHT_FRAMES;
+                            CURRENT_DIRECTION = Direction.Right;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_RIGHT_FRAME];
+                                CURRENT_WALK_RIGHT_FRAME = (CURRENT_WALK_RIGHT_FRAME + 1) % frames.Count;
+                            }
+                        }
+                        else
+                        {
+                            frames = SPRITE_LOADER.WALK_LEFT_FRAMES;
+                            CURRENT_DIRECTION = Direction.Left;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_LEFT_FRAME];
+                                CURRENT_WALK_LEFT_FRAME = (CURRENT_WALK_LEFT_FRAME + 1) % frames.Count;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (MOUSE_DELTAY > 0)
+                        {
+                            frames = SPRITE_LOADER.WALK_DOWN_FRAMES;
+                            CURRENT_DIRECTION = Direction.Down;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_DOWN_FRAME];
+                                CURRENT_WALK_DOWN_FRAME = (CURRENT_WALK_DOWN_FRAME + 1) % frames.Count;
+                            }
+                        }
+                        else
+                        {
+                            frames = SPRITE_LOADER.WALK_UP_FRAMES;
+                            CURRENT_DIRECTION = Direction.Up;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_UP_FRAME];
+                                CURRENT_WALK_UP_FRAME = (CURRENT_WALK_UP_FRAME + 1) % frames.Count;
+                            }
+                        }
+                    }
+
+                    if (nextFrame != null)
+                    {
+                        SpriteImage.Source = nextFrame;
+                    }
                 }
             };
 
+
             IDLE_TIMER.Start();
+            WALK_TIMER.Start();
             //INTRO_TIMER.Start();
         }
 
@@ -114,6 +225,67 @@ namespace Desktop_Gremlin
             IS_DRAGGING = true;
             DragMove();
             IS_DRAGGING = false;
+        }
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Left)
+            {
+                MOVE_LEFT = true;
+                IS_WALKING = true;
+                CURRENT_DIRECTION = Direction.Left;
+            }
+            else if (e.Key == Key.Right)
+            {
+                MOVE_RIGHT = true;
+                IS_WALKING = true;
+                CURRENT_DIRECTION = Direction.Right;
+            }
+            else if (e.Key == Key.Up)
+            {
+                MOVE_UP = true;
+                IS_WALKING = true;
+                CURRENT_DIRECTION = Direction.Up;
+            }
+            else if (e.Key == Key.Down)
+            {
+                MOVE_DOWN = true;
+                IS_WALKING = true;
+                CURRENT_DIRECTION = Direction.Down;
+            }
+            else if (e.Key == Key.Space)
+            {
+                if (!ALLOW_WALK_TO_CURSOR)
+                {
+                    ALLOW_WALK_TO_CURSOR = true;
+                }
+                else
+                {
+                    ALLOW_WALK_TO_CURSOR = false;
+                    IS_WALKING = false;
+                    WALK_TO_CURSOR = false;
+                }
+            }
+            else if (e.Key == Key.Z)
+            {
+                if (!IS_EMOTING1)
+                {
+                    IS_EMOTING1 = true;
+                }
+                else
+                {
+                    IS_EMOTING1 = false;
+                }
+            }
+
+        }
+
+        private void Window_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Left) MOVE_LEFT = false;
+            if (e.Key == Key.Right) MOVE_RIGHT = false;
+            if (e.Key == Key.Up) MOVE_UP = false;
+            if (e.Key == Key.Down) MOVE_DOWN = false;
+            IS_WALKING = MOVE_LEFT || MOVE_RIGHT || MOVE_DOWN || MOVE_UP;
         }
     }
 }

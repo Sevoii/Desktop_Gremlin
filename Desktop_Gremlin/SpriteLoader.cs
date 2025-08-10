@@ -12,11 +12,11 @@ namespace Desktop_Gremlin
     {
         public List<BitmapImage> IDLE_FRAMES = new List<BitmapImage>();
         public List<BitmapImage> DRAG_FRAMES = new List<BitmapImage>();
-        private List<BitmapImage> WALK_LEFT_FRAMES = new List<BitmapImage>();
-        private List<BitmapImage> WALK_RIGHT_FRAMES = new List<BitmapImage>();
-        private List<BitmapImage> WALK_UP_FRAMES = new List<BitmapImage>();
-        private List<BitmapImage> WALK_DOWN_FRAMES = new List<BitmapImage>();
-        private List<BitmapImage> EMOTE1_FRAMES = new List<BitmapImage>();
+        public List<BitmapImage> WALK_LEFT_FRAMES = new List<BitmapImage>();
+        public List<BitmapImage> WALK_RIGHT_FRAMES = new List<BitmapImage>();
+        public List<BitmapImage> WALK_UP_FRAMES = new List<BitmapImage>();
+        public List<BitmapImage> WALK_DOWN_FRAMES = new List<BitmapImage>();
+        public List<BitmapImage> EMOTE1_FRAMES = new List<BitmapImage>();
         public  List<BitmapImage> INTRO_FRAMES = new List<BitmapImage>();
 
         private List<BitmapImage> LoadFramesFromFolder(string folderPath, string folderDescription = "Folder")
@@ -40,7 +40,9 @@ namespace Desktop_Gremlin
 
             foreach (var filePath in frameFiles)
             {
-                frames.Add(new BitmapImage(new Uri(filePath, UriKind.Absolute)));
+                var image = ImageCache.Load(filePath);
+                if (image != null)
+                    frames.Add(image);
             }
 
             return frames;
@@ -126,6 +128,37 @@ namespace Desktop_Gremlin
 
             if (WALK_DOWN_FRAMES.Count == 0)
                 WALK_DOWN_FRAMES = new List<BitmapImage>(WALK_LEFT_FRAMES);
+        }
+        public static class ImageCache
+        {
+            private static Dictionary<string, BitmapImage> cashe = new Dictionary<string, BitmapImage>();
+
+            public static BitmapImage Load(string filePath)
+            {
+                if (cashe.TryGetValue(filePath, out var cached))
+                    return cached;
+
+                if (!File.Exists(filePath))
+                    return null;
+
+                var image = new BitmapImage();
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    image.BeginInit();
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.StreamSource = stream;
+                    image.EndInit();
+                }
+
+                image.Freeze(); // important!
+                cashe[filePath] = image;
+                return image;
+            }
+
+            public static void Clear()
+            {
+                cashe.Clear();
+            }
         }
     }
 

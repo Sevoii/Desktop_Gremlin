@@ -33,7 +33,13 @@ namespace Desktop_Gremlin
         private int CURRENT_DRAG_FRAME = 0;
         private int CURRENT_WALK_FRAME = 0;
         private int CURRENT_EMOTE1_FRAME = 0;
-        private int CURRENT_INTRO_FRAME = 0;    
+        private int CURRENT_INTRO_FRAME = 0;
+
+
+        private int CURRENT_WALK_LEFT_FRAME = 0;
+        private int CURRENT_WALK_RIGHT_FRAME = 0;
+        private int CURRENT_WALK_UP_FRAME = 0;
+        private int CURRENT_WALK_DOWN_FRAME = 0;
 
 
         private bool IS_INTRO = true;
@@ -330,28 +336,62 @@ namespace Desktop_Gremlin
                     this.Left = this.Left + MOUSE_DELTAX;
                     this.Top = this.Top + MOUSE_DELTAY;
                     List<BitmapImage> frames;
+                    BitmapImage nextFrame = null;
+
                     if (Math.Abs(MOUSE_DELTAX) > Math.Abs(MOUSE_DELTAY))
                     {
-                        frames = MOUSE_DELTAX > 0 ? WALK_RIGHT_FRAMES : WALK_LEFT_FRAMES;
                         if (MOUSE_DELTAX > 0)
                         {
+                            frames = WALK_RIGHT_FRAMES;
                             CURRENT_DIRECTION = Direction.Right;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_RIGHT_FRAME];
+                                CURRENT_WALK_RIGHT_FRAME = (CURRENT_WALK_RIGHT_FRAME + 1) % frames.Count;
+                            }
                         }
                         else
                         {
+                            frames = WALK_LEFT_FRAMES;
                             CURRENT_DIRECTION = Direction.Left;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_LEFT_FRAME];
+                                CURRENT_WALK_LEFT_FRAME = (CURRENT_WALK_LEFT_FRAME + 1) % frames.Count;
+                            }
                         }
-                        //CURRENT_DIRECTION = deltaX > 0 ? Direction.Right : Direction.Left;
                     }
                     else
                     {
-                        frames = MOUSE_DELTAY > 0 ? WALK_DOWN_FRAMES : WALK_UP_FRAMES;
-                        CURRENT_DIRECTION = MOUSE_DELTAY > 0 ? Direction.Down : Direction.Up;
+                        if (MOUSE_DELTAY > 0)
+                        {
+                            frames = WALK_DOWN_FRAMES;
+                            CURRENT_DIRECTION = Direction.Down;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_DOWN_FRAME];
+                                CURRENT_WALK_DOWN_FRAME = (CURRENT_WALK_DOWN_FRAME + 1) % frames.Count;
+                            }
+                        }
+                        else
+                        {
+                            frames = WALK_UP_FRAMES;
+                            CURRENT_DIRECTION = Direction.Up;
+
+                            if (frames.Count > 0)
+                            {
+                                nextFrame = frames[CURRENT_WALK_UP_FRAME];
+                                CURRENT_WALK_UP_FRAME = (CURRENT_WALK_UP_FRAME + 1) % frames.Count;
+                            }
+                        }
                     }
-                    if (frames.Count > 0)
+
+                    if (nextFrame != null)
                     {
-                        SpriteImage.Source = frames[CURRENT_WALK_FRAME];
-                        CURRENT_WALK_FRAME = (CURRENT_WALK_FRAME + 1) % frames.Count;
+                        SpriteImage.Source = nextFrame;
                     }
                 }
                 if (ALLOW_WALK_TO_CURSOR)

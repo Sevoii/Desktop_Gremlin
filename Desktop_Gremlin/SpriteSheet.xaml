@@ -1,4 +1,4 @@
-﻿<Window x:Class="Desktop_Gremlin.MainAnimation"
+﻿<Window x:Class="Desktop_Gremlin.SpriteSheet"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,10 +10,10 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        ResizeMode="NoResize" BorderThickness="0" BorderBrush="Black" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
+        ResizeMode="NoResize"  BorderThickness="0" BorderBrush="Black">
     <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" >
         <Image Name="SpriteImage"
-           Width="140" Height="150"
+           Width="150" Height="165"
            HorizontalAlignment="Left"
            VerticalAlignment="Top"
            Canvas.Top="20"  Margin="10,10,0,0"/>
