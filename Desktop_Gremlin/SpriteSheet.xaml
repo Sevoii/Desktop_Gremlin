@@ -5,25 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Desktop_Gremlin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="180" Width="305"
+        Title="MainWindow" Height="210" Width="330"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        ResizeMode="NoResize"  BorderThickness="0" BorderBrush="Black">
+        ResizeMode="NoResize"  BorderThickness="0" BorderBrush="Black" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
     <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" >
         <Image Name="SpriteImage"
-           Width="150" Height="165"
+           Width="185" Height="195"
            HorizontalAlignment="Left"
            VerticalAlignment="Top"
-           Canvas.Top="20"  Margin="10,10,0,0"/>
+           Canvas.Top="20"  Margin="10,5,0,0"/>
         <Label x:Name="SpriteLabel"
            Content=""
            Background="Transparent"
-           Foreground="White"
+           Foreground="Red"
            FontWeight="Bold"
            FontSize="14"
-           VerticalContentAlignment="Center" RenderTransformOrigin="-0.145,-0.349" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Canvas.Left="45" Canvas.Top="6" Margin="80,1,0,0"/>
+           VerticalContentAlignment="Center" RenderTransformOrigin="-0.145,-0.349" HorizontalAlignment="Left" VerticalAlignment="Top" Width="135" Canvas.Left="45" Canvas.Top="6" Margin="115,1,0,0"/>
         <Border x:Name="SpeechBubbleBorder"
                 Background="Black"
                 BorderBrush="White"
