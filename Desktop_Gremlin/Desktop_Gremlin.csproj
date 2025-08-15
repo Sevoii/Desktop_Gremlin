@@ -35,7 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>favicon %281%29.ico</ApplicationIcon>
+    <ApplicationIcon>favicon %283%29.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -61,24 +61,8 @@
     <Compile Include="SpriteSheet.xaml.cs">
       <DependentUpon>SpriteSheet.xaml</DependentUpon>
     </Compile>
-    <Page Include="OldFiles\MainAnimation.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="OldFiles\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="OldFiles\SpriteLoader.cs" />
-    <Compile Include="OldFiles\MainAnimation.xaml.cs">
-      <DependentUpon>MainAnimation.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="OldFiles\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Page Include="SpriteSheet.xaml">
@@ -116,9 +100,7 @@
     <Folder Include="Sprites\ico\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="favicon.ico" />
-    <Resource Include="favicon %281%29.ico" />
-    <Resource Include="favicon %282%29.ico" />
+    <Resource Include="favicon %283%29.ico" />
     <Content Include="Sprites\SpriteSheet\emote1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

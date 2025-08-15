@@ -1,44 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.IO;
 using System.Windows.Threading;
-using static Desktop_Gremlin.MainWindow;
+
 
 namespace Desktop_Gremlin
 {
-    /// <summary>
-    /// Interaction logic for SpriteSheet.xaml
-    /// </summary>
     public partial class SpriteSheet : Window
     {
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool GetCursorPos(out POINT lpPoint);
 
-        private static int FRAME_WIDTH = 300;
-        private static int FRAME_HEIGHT = 300;
-        private static int IDLE_FRAME_COUNT = 41;
-        private static int GRAB_FRAME_COUNT = 154;
-        private static int WALK_DOWN_FRAME = 17;
-        private static int WALK_UP_FRAME = 17;
-        private static int WALK_LEFT_FRAME = 18;
-        private static int WALK_RIGHT_FRAME = 18;
-        private static int EMOTE1_FRAME_COUNT = 61;
-        private static int EMOTE2_FRAME_COUNT = 24;
+        private int FRAME_WIDTH = 300;
+        private int FRAME_HEIGHT = 300;
+        private int IDLE_FRAME_COUNT = 41;
+        private int GRAB_FRAME_COUNT = 154;
+        private int WALK_DOWN_FRAME = 17;
+        private int WALK_UP_FRAME = 17;
+        private int WALK_LEFT_FRAME = 18;
+        private int WALK_RIGHT_FRAME = 18;
+        private int EMOTE1_FRAME_COUNT = 61;
+        private int EMOTE2_FRAME_COUNT = 24;
 
         private int CURRENT_WALK_DOWN_FRAME = 0;
         private int CURRENT_WALK_UP_FRAME = 0;  
-        private int CURRENT_WALK_RIGHT_FRAME = 0;
+        private int CURRENT_WALK_RIGHT_FRAME = 0;   
         private int CURRENT_WALK_UP_LEFT_FRAME = 0;
         private int CURRENT_IDLE_FRAME = 0;
         private int CURRENT_GRAB_FRAME = 0;
@@ -98,7 +86,7 @@ namespace Desktop_Gremlin
         private bool MOVE_DOWN = false;
         public SpriteSheet()
         {
-            InitializeComponent();
+            InitializeComponent(); 
             LoadConfig();
             LoadSpritesSheet();
             InitializeAnimations();
@@ -106,11 +94,23 @@ namespace Desktop_Gremlin
 
         private BitmapImage LoadSprite(string fileName)
         {
+            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sprites", "SpriteSheet", fileName);
+
+            if (!File.Exists(path))
+            {
+                MessageBox.Show(
+                    $"Missing sprite file / Wrong File name Format:\n{fileName}\n\nPath: {path}",
+                    "Sprite Load Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+                Application.Current.Shutdown(); 
+                return null;
+            }
+
             var image = new BitmapImage();
             image.BeginInit();
-            image.UriSource = new Uri(
-                System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sprites", "SpriteSheet", fileName)
-            );
+            image.UriSource = new Uri(path);
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.EndInit();
             image.Freeze();
@@ -290,19 +290,11 @@ namespace Desktop_Gremlin
         {
             IS_DRAGGING = true;
             DragMove();
-            if (!FOLLOW_CURSOR)
-                FOLLOW_CURSOR = true;
-            else
-                FOLLOW_CURSOR = false;
 
-            if(!IS_EMOTING2)
-                IS_EMOTING2 = true; 
-            else
-                IS_EMOTING2 = false;
-
+            FOLLOW_CURSOR = !FOLLOW_CURSOR;
+            IS_EMOTING2 = !IS_EMOTING2;
 
             IS_DRAGGING = false;
-
         }
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -376,6 +368,7 @@ namespace Desktop_Gremlin
                     case "WALK_LEFT_FRAME": WALK_LEFT_FRAME = intValue; break;
                     case "WALK_RIGHT_FRAME": WALK_RIGHT_FRAME = intValue; break;
                     case "EMOTE1_FRAME_COUNT": EMOTE1_FRAME_COUNT = intValue; break;
+                    case "EMOTE2_FRAME_COUNT": EMOTE2_FRAME_COUNT = intValue; break;    
                     case "FRAME_RATE": FRAME_RATE = intValue; break;
                 }
             }

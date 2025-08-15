@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Desktop_Gremlin"
         mc:Ignorable="d"
-        Title="MainWindow" Height="190" Width="330"
+        Title="MainWindow" Height="205" Width="195"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -16,7 +16,7 @@
            Width="160" Height="162"
            HorizontalAlignment="Left"
            VerticalAlignment="Top"
-           Canvas.Top="20"  Margin="10,20,0,0"/>
+           Canvas.Top="20"  Margin="15,25,0,0"/>
         <Label x:Name="SpriteLabel"
            Content=""
            Background="Transparent"
