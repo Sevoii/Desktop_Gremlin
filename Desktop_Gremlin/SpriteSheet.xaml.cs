@@ -22,16 +22,19 @@ namespace Desktop_Gremlin
     /// </summary>
     public partial class SpriteSheet : Window
     {
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out POINT lpPoint);
 
-        private const int FRAME_WIDTH = 300;
-        private const int FRAME_HEIGHT = 300;
-        private const int IDLE_FRAME_COUNT = 41;
-        private const int GRAB_FRAME_COUNT = 105;
-        private const int WALK_DOWN_FRAME = 17;
-        private const int WALK_UP_FRAME = 17; 
-        private const int WALK_LEFT_FRAME = 18;
-        private const int WALK_RIGHT_FRAME = 18;
-        private const int EMOTE_1 = 61;
+        private static int FRAME_WIDTH = 300;
+        private static int FRAME_HEIGHT = 300;
+        private static int IDLE_FRAME_COUNT = 41;
+        private static int GRAB_FRAME_COUNT = 154;
+        private static int WALK_DOWN_FRAME = 17;
+        private static int WALK_UP_FRAME = 17;
+        private static int WALK_LEFT_FRAME = 18;
+        private static int WALK_RIGHT_FRAME = 18;
+        private static int EMOTE1_FRAME_COUNT = 61;
+        private static int EMOTE2_FRAME_COUNT = 24;
 
         private int CURRENT_WALK_DOWN_FRAME = 0;
         private int CURRENT_WALK_UP_FRAME = 0;  
@@ -41,8 +44,9 @@ namespace Desktop_Gremlin
         private int CURRENT_GRAB_FRAME = 0;
         private int CURRENT_WALK_LEFT_FRAME = 0;
         private int CURRENT_EMOTE_1 = 0;
+        private int CURRENT_EMOTE_2 = 0;
 
-        private int FRAME_RRATE = 30;
+        private int FRAME_RATE = 30;
 
         private BitmapImage WALK_DOWN_SHEET;
         private BitmapImage IDLE_SHEET;
@@ -50,7 +54,8 @@ namespace Desktop_Gremlin
         private BitmapImage WALK_UP_SHEET;  
         private BitmapImage WALK_LEFT_SHEET;
         private BitmapImage WALK_RIGHT_SHEET;   
-        private BitmapImage EMOTE_SHEET;
+        private BitmapImage EMOTE1_SHEET;
+        private BitmapImage EMOTE2_SHEET;
 
         private DispatcherTimer WALK_TIMER;   
         private DispatcherTimer IDLE_TIMER;
@@ -58,14 +63,18 @@ namespace Desktop_Gremlin
         private DispatcherTimer EMOTE1_TIMER;
 
         private bool IS_INTRO = true;
+        private bool IS_IDLE = true;
         private bool IS_WALKING = false;
         private bool IS_DRAGGING = false;
         private bool LAST_DRAG_STATE = false;
         private bool LAST_STATE_DRAG_OR_WALK = false;
         private bool IS_EMOTING1 = true;
+        private bool IS_EMOTING2 = false;
 
-        private bool WALK_TO_CURSOR = false;
-        private bool ALLOW_WALK_TO_CURSOR = false;
+        private bool FOLLOW_CURSOR = false;
+        private Point LAST_CURSOR_POSITION;
+        private double FOLLOW_SPEED = 5.0;
+        private DateTime LAST_CURSOR_MOVE_TIME;
         private double MOUSE_DELTAX = 0;
         private double MOUSE_DELTAY = 0;
 
@@ -78,7 +87,11 @@ namespace Desktop_Gremlin
             Up,
             Down
         }
-
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+        }
         private bool MOVE_LEFT = false;
         private bool MOVE_RIGHT = false;
         private bool MOVE_UP = false;
@@ -86,6 +99,7 @@ namespace Desktop_Gremlin
         public SpriteSheet()
         {
             InitializeComponent();
+            LoadConfig();
             LoadSpritesSheet();
             InitializeAnimations();
         }
@@ -110,7 +124,8 @@ namespace Desktop_Gremlin
             WALK_UP_SHEET = LoadSprite("run_up.png");
             WALK_LEFT_SHEET = LoadSprite("run_left.png");
             WALK_RIGHT_SHEET = LoadSprite("run_right.png");
-            EMOTE_SHEET = LoadSprite("emote1.png");
+            EMOTE1_SHEET = LoadSprite("emote1.png");
+            EMOTE2_SHEET = LoadSprite("emote2.png");
         }
         private int PlayAnimationFrame(BitmapImage sheet, int currentFrame, int frameCount, int columns = 5)
         {
@@ -121,7 +136,9 @@ namespace Desktop_Gremlin
             int y = (currentFrame / columns) * FRAME_HEIGHT;
 
             if (x + FRAME_WIDTH > sheet.PixelWidth || y + FRAME_HEIGHT > sheet.PixelHeight)
+            {
                 return currentFrame;
+            }
 
             SpriteImage.Source = new CroppedBitmap(sheet, new Int32Rect(x, y, FRAME_WIDTH, FRAME_HEIGHT));
 
@@ -131,15 +148,19 @@ namespace Desktop_Gremlin
         private void InitializeAnimations()
         {
 
-            EMOTE1_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RRATE) };
+            EMOTE1_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
             EMOTE1_TIMER.Tick += (s, e) =>
             {
-                if(IS_WALKING || IS_DRAGGING) {
+                if(IS_WALKING || IS_DRAGGING || FOLLOW_CURSOR) 
+                {
                     IS_EMOTING1 = false;
                     EMOTE1_TIMER.Stop();
                 };
+
                 if (IS_EMOTING1)
-                    CURRENT_EMOTE_1 = PlayAnimationFrame(EMOTE_SHEET, CURRENT_EMOTE_1, EMOTE_1);
+                {
+                    CURRENT_EMOTE_1 = PlayAnimationFrame(EMOTE1_SHEET, CURRENT_EMOTE_1, EMOTE1_FRAME_COUNT);
+                }
 
                 if (CURRENT_EMOTE_1 == 0)
                 {
@@ -148,23 +169,71 @@ namespace Desktop_Gremlin
                 }
             };
 
-            IDLE_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RRATE) };
+            IDLE_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
             IDLE_TIMER.Tick += (s, e) =>
             {
-                if (!IS_DRAGGING && !IS_WALKING && !IS_EMOTING1)
+                if (!IS_DRAGGING && !IS_WALKING && !IS_EMOTING1 && !FOLLOW_CURSOR && !IS_EMOTING2)
+                {
                     CURRENT_IDLE_FRAME = PlayAnimationFrame(IDLE_SHEET, CURRENT_IDLE_FRAME, IDLE_FRAME_COUNT);
+                }
+            
             };
 
-            GRAB_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RRATE) };
+            GRAB_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
             GRAB_TIMER.Tick += (s, e) =>
             {
                 if (IS_DRAGGING)
+                {
                     CURRENT_GRAB_FRAME = PlayAnimationFrame(GRAB_SHEET, CURRENT_GRAB_FRAME, GRAB_FRAME_COUNT);
+                }
                     
             };
-            WALK_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RRATE) };
+            WALK_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
             WALK_TIMER.Tick += (s, e) =>
             {
+                if (FOLLOW_CURSOR && !IS_DRAGGING)
+                {
+                    POINT cursorPos;
+                    GetCursorPos(out cursorPos);
+
+                    double targetX = cursorPos.X - (FRAME_WIDTH / 2);
+                    double targetY = cursorPos.Y - (FRAME_HEIGHT / 2);
+
+                    double dx = targetX - this.Left;
+                    double dy = targetY - this.Top;
+
+                    double distance = Math.Sqrt(dx * dx + dy * dy);
+
+                    if (distance > 50)
+                    {
+                        dx = (dx / distance) * SPEED;
+                        dy = (dy / distance) * SPEED;
+
+                        this.Left += dx;
+                        this.Top += dy;
+
+                        if (Math.Abs(dx) > Math.Abs(dy))
+                        {
+                            if (dx < 0)
+                                CURRENT_WALK_LEFT_FRAME = PlayAnimationFrame(WALK_LEFT_SHEET, CURRENT_WALK_LEFT_FRAME, WALK_LEFT_FRAME);
+                            else
+                                CURRENT_WALK_RIGHT_FRAME = PlayAnimationFrame(WALK_RIGHT_SHEET, CURRENT_WALK_RIGHT_FRAME, WALK_RIGHT_FRAME);
+                        }
+                        else
+                        {
+                            if (dy > 0)
+                                CURRENT_WALK_DOWN_FRAME = PlayAnimationFrame(WALK_DOWN_SHEET, CURRENT_WALK_DOWN_FRAME, WALK_DOWN_FRAME);
+                            else
+                                CURRENT_WALK_UP_FRAME = PlayAnimationFrame(WALK_UP_SHEET, CURRENT_WALK_UP_FRAME, WALK_UP_FRAME);
+                        }
+                        //SpriteLabel.Content = Math.Abs(distance).ToString() + dx.ToString() + " " + dy.ToString();
+                    }
+                    else
+                    {                      
+                        CURRENT_EMOTE_2 = PlayAnimationFrame(EMOTE2_SHEET, CURRENT_EMOTE_2, EMOTE2_FRAME_COUNT);                       
+                    }
+                    return; 
+                }
                 if (IS_WALKING)
                 {
                     MOUSE_DELTAX = 0;
@@ -189,16 +258,25 @@ namespace Desktop_Gremlin
                     if (Math.Abs(MOUSE_DELTAX) > Math.Abs(MOUSE_DELTAY))
                     {
                         if (MOUSE_DELTAX < 0)
+                        {
                             CURRENT_WALK_LEFT_FRAME = PlayAnimationFrame(WALK_LEFT_SHEET, CURRENT_WALK_LEFT_FRAME, WALK_LEFT_FRAME);
+                        }
                         else
+                        {
                             CURRENT_WALK_RIGHT_FRAME = PlayAnimationFrame(WALK_RIGHT_SHEET, CURRENT_WALK_RIGHT_FRAME, WALK_RIGHT_FRAME);
+                        }
+
                     }
                     else
                     {
                         if (MOUSE_DELTAY > 0)
+                        {
                             CURRENT_WALK_DOWN_FRAME = PlayAnimationFrame(WALK_DOWN_SHEET, CURRENT_WALK_DOWN_FRAME, WALK_DOWN_FRAME);
+                        }
                         else
+                        {
                             CURRENT_WALK_UP_FRAME = PlayAnimationFrame(WALK_UP_SHEET, CURRENT_WALK_UP_FRAME, WALK_UP_FRAME);
+                        }
                     }
                 } 
             };
@@ -212,6 +290,17 @@ namespace Desktop_Gremlin
         {
             IS_DRAGGING = true;
             DragMove();
+            if (!FOLLOW_CURSOR)
+                FOLLOW_CURSOR = true;
+            else
+                FOLLOW_CURSOR = false;
+
+            if(!IS_EMOTING2)
+                IS_EMOTING2 = true; 
+            else
+                IS_EMOTING2 = false;
+
+
             IS_DRAGGING = false;
 
         }
@@ -241,6 +330,10 @@ namespace Desktop_Gremlin
                 IS_WALKING = true;
                 CURRENT_DIRECTION = Direction.Down;
             }
+            else if (e.Key == Key.C)
+            {
+                FOLLOW_CURSOR = !FOLLOW_CURSOR;
+            }
         }
         private void Window_KeyUp(object sender, KeyEventArgs e)
         {
@@ -249,6 +342,43 @@ namespace Desktop_Gremlin
             if (e.Key == Key.Up) MOVE_UP = false;
             if (e.Key == Key.Down) MOVE_DOWN = false;
             IS_WALKING = MOVE_LEFT || MOVE_RIGHT || MOVE_DOWN || MOVE_UP;
+        }
+
+        private void LoadConfig()
+        {
+            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+            if (!File.Exists(path))
+                return; 
+
+            foreach (var line in File.ReadAllLines(path))
+            {
+                if (string.IsNullOrWhiteSpace(line) || !line.Contains("="))
+                    continue;
+
+                var parts = line.Split('=');
+                if (parts.Length != 2)
+                    continue;
+
+                string key = parts[0].Trim();
+                string value = parts[1].Trim();
+
+                if (!int.TryParse(value, out int intValue))
+                    continue;
+
+                switch (key.ToUpper())
+                {
+                    case "FRAME_WIDTH": FRAME_WIDTH = intValue; break;
+                    case "FRAME_HEIGHT": FRAME_HEIGHT = intValue; break;
+                    case "IDLE_FRAME_COUNT": IDLE_FRAME_COUNT = intValue; break;
+                    case "GRAB_FRAME_COUNT": GRAB_FRAME_COUNT = intValue; break;
+                    case "WALK_DOWN_FRAME": WALK_DOWN_FRAME = intValue; break;
+                    case "WALK_UP_FRAME": WALK_UP_FRAME = intValue; break;
+                    case "WALK_LEFT_FRAME": WALK_LEFT_FRAME = intValue; break;
+                    case "WALK_RIGHT_FRAME": WALK_RIGHT_FRAME = intValue; break;
+                    case "EMOTE1_FRAME_COUNT": EMOTE1_FRAME_COUNT = intValue; break;
+                    case "FRAME_RATE": FRAME_RATE = intValue; break;
+                }
+            }
         }
 
     }
