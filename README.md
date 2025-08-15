@@ -4,7 +4,7 @@
 
 # 📄 Gremlin
 A fun little WPF application that displays an animated sprite on your desktop. Agnes is just gremlin that I choose because of reasons (Best uma).
-You can drag and shake her around, follow your curosr and be annoying as she blocks your mouse.
+You can drag and shake her around, follow your curosr and be annoying as she blocks your mouse. This project is WIP 
 
 The application uses a spritesheet and can be replaced with a spritesheet of your own, but make sure it follows the proper format through the config file.
 
