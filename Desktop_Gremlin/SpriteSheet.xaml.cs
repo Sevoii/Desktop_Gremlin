@@ -52,11 +52,9 @@ namespace Desktop_Gremlin
         private BitmapImage EMOTE2_SHEET;
         private BitmapImage EMOTE3_SHEET;   
 
-        private DispatcherTimer WALK_TIMER;   
-        private DispatcherTimer IDLE_TIMER;
-        private DispatcherTimer GRAB_TIMER;
-        private DispatcherTimer EMOTE1_TIMER;
-        private DispatcherTimer EMOTE3_TIMER;   
+
+        private DispatcherTimer CLOSE_TIMER;
+        private DispatcherTimer MASTER_TIMER;
 
         private bool IS_INTRO = true;
         private bool IS_IDLE = true;
@@ -156,52 +154,38 @@ namespace Desktop_Gremlin
             return (currentFrame + 1) % frameCount;
         }
        
-        private void InitializeAnimations()
-        {
-
-            EMOTE1_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
-            EMOTE1_TIMER.Tick += (s, e) =>
+       private void InitializeAnimations()
+{
+            MASTER_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
+            MASTER_TIMER.Tick += (s, e) =>
             {
-                if(IS_WALKING || IS_DRAGGING || FOLLOW_CURSOR) 
-                {
-                    IS_EMOTING1 = false;
-                    EMOTE1_TIMER.Stop();
-                };
 
                 if (IS_EMOTING1)
                 {
-                    CURRENT_EMOTE_1 = PlayAnimationFrame(EMOTE1_SHEET, CURRENT_EMOTE_1, EMOTE1_FRAME_COUNT);
+                    if (IS_WALKING || IS_DRAGGING || FOLLOW_CURSOR)
+                    {
+                        IS_EMOTING1 = false;
+                    }
+                    else
+                    {
+                        CURRENT_EMOTE_1 = PlayAnimationFrame(EMOTE1_SHEET, CURRENT_EMOTE_1, EMOTE1_FRAME_COUNT);
+                        if (CURRENT_EMOTE_1 == 0)
+                        {
+                            IS_EMOTING1 = false;
+                        }
+                    }
                 }
 
-                if (CURRENT_EMOTE_1 == 0)
-                {
-                    IS_EMOTING1 = false;
-                    EMOTE1_TIMER.Stop();
-                }
-            };
-
-            IDLE_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
-            IDLE_TIMER.Tick += (s, e) =>
-            {
                 if (!IS_DRAGGING && !IS_WALKING && !IS_EMOTING1 && !FOLLOW_CURSOR && !IS_EMOTING2)
                 {
                     CURRENT_IDLE_FRAME = PlayAnimationFrame(IDLE_SHEET, CURRENT_IDLE_FRAME, IDLE_FRAME_COUNT);
                 }
-            
-            };
 
-            GRAB_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
-            GRAB_TIMER.Tick += (s, e) =>
-            {
                 if (IS_DRAGGING)
                 {
                     CURRENT_GRAB_FRAME = PlayAnimationFrame(GRAB_SHEET, CURRENT_GRAB_FRAME, GRAB_FRAME_COUNT);
                 }
-                    
-            };
-            WALK_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
-            WALK_TIMER.Tick += (s, e) =>
-            {
+
                 if (FOLLOW_CURSOR && !IS_DRAGGING)
                 {
                     POINT cursorPos;
@@ -237,16 +221,13 @@ namespace Desktop_Gremlin
                             else
                                 CURRENT_WALK_UP_FRAME = PlayAnimationFrame(WALK_UP_SHEET, CURRENT_WALK_UP_FRAME, WALK_UP_FRAME);
                         }
-                        //For Debugging purposes//
-                        //SpriteLabel.Content = Math.Abs(distance).ToString() + dx.ToString() + " " + dy.ToString();
                     }
                     else
-                    {                      
+                    {                       
                         CURRENT_EMOTE_2 = PlayAnimationFrame(EMOTE2_SHEET, CURRENT_EMOTE_2, EMOTE2_FRAME_COUNT);                       
                     }
-                    return; 
                 }
-                if (IS_WALKING)
+                else if (IS_WALKING)
                 {
                     MOUSE_DELTAX = 0;
                     MOUSE_DELTAY = 0;
@@ -262,41 +243,30 @@ namespace Desktop_Gremlin
                         MOUSE_DELTAX = (MOUSE_DELTAX / length) * SPEED;
                         MOUSE_DELTAY = (MOUSE_DELTAY / length) * SPEED;
                     }
-                    this.Left = this.Left + MOUSE_DELTAX;
-                    this.Top = this.Top + MOUSE_DELTAY;
-                    //SpriteLabel.Content = this.Left.ToString() + " > " + this.Top.ToString() ;
 
+                    this.Left += MOUSE_DELTAX;
+                    this.Top += MOUSE_DELTAY;
 
                     if (Math.Abs(MOUSE_DELTAX) > Math.Abs(MOUSE_DELTAY))
                     {
                         if (MOUSE_DELTAX < 0)
-                        {
                             CURRENT_WALK_LEFT_FRAME = PlayAnimationFrame(WALK_LEFT_SHEET, CURRENT_WALK_LEFT_FRAME, WALK_LEFT_FRAME);
-                        }
                         else
-                        {
                             CURRENT_WALK_RIGHT_FRAME = PlayAnimationFrame(WALK_RIGHT_SHEET, CURRENT_WALK_RIGHT_FRAME, WALK_RIGHT_FRAME);
-                        }
-
                     }
                     else
                     {
                         if (MOUSE_DELTAY > 0)
-                        {
                             CURRENT_WALK_DOWN_FRAME = PlayAnimationFrame(WALK_DOWN_SHEET, CURRENT_WALK_DOWN_FRAME, WALK_DOWN_FRAME);
-                        }
                         else
-                        {
                             CURRENT_WALK_UP_FRAME = PlayAnimationFrame(WALK_UP_SHEET, CURRENT_WALK_UP_FRAME, WALK_UP_FRAME);
-                        }
                     }
-                } 
+                }
             };
-            EMOTE1_TIMER.Start();
-            WALK_TIMER.Start();
-            GRAB_TIMER.Start(); 
-            IDLE_TIMER.Start();
-        }
+
+            MASTER_TIMER.Start();
+       }
+
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -417,22 +387,20 @@ namespace Desktop_Gremlin
 
         private void CloseApp()
         {
-            EMOTE1_TIMER.Stop();
-            WALK_TIMER.Stop();
-            GRAB_TIMER.Stop();
-            IDLE_TIMER.Stop();
-            EMOTE3_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
-            EMOTE3_TIMER.Tick += (s, e) =>
+            MASTER_TIMER.Stop();
+            CLOSE_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
+            CLOSE_TIMER.Tick += (s, e) =>
             {
                 CURRENT_EMOTE_3 = PlayAnimationFrame(EMOTE3_SHEET, CURRENT_EMOTE_3, EMOTE3_FRAME_COUNT);
                 if (CURRENT_EMOTE_3 == 0)
                 {
-                    EMOTE3_TIMER.Stop();
+                    CLOSE_TIMER.Stop();
                     TRAY_ICON.Visible = false;
+                    TRAY_ICON?.Dispose();
                     System.Windows.Application.Current.Shutdown();
                 }
             };
-            EMOTE3_TIMER.Start();
+            CLOSE_TIMER.Start();
         }
 
     }
