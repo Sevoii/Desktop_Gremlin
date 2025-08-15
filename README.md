@@ -1,5 +1,6 @@
-# ACTUAL INSANITY
+# A NEW WAY TO ANNOY YOURSELF 
+
+Agnes Tachyon can now annoy you while you stare idly into the dark abyss knowns as your computer.
 
 
-
-![emote2](https://github.com/user-attachments/assets/f398eedc-a4ec-4218-8f73-48e3d987401f)
+![idle-ezgif com-crop](https://github.com/user-attachments/assets/97495dc4-1a5c-4e11-ac2f-cbf3c882adfe)
