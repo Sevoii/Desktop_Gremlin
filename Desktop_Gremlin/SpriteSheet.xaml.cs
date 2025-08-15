@@ -4,6 +4,9 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.IO;
 using System.Windows.Threading;
+using System.Windows.Forms;
+using System.Drawing;
+using System.Diagnostics;
 
 
 namespace Desktop_Gremlin
@@ -12,6 +15,7 @@ namespace Desktop_Gremlin
     {
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool GetCursorPos(out POINT lpPoint);
+        private NotifyIcon TRAY_ICON;
 
         private int FRAME_WIDTH = 300;
         private int FRAME_HEIGHT = 300;
@@ -23,6 +27,7 @@ namespace Desktop_Gremlin
         private int WALK_RIGHT_FRAME = 18;
         private int EMOTE1_FRAME_COUNT = 61;
         private int EMOTE2_FRAME_COUNT = 24;
+        private int EMOTE3_FRAME_COUNT = 95;
 
         private int CURRENT_WALK_DOWN_FRAME = 0;
         private int CURRENT_WALK_UP_FRAME = 0;  
@@ -33,6 +38,7 @@ namespace Desktop_Gremlin
         private int CURRENT_WALK_LEFT_FRAME = 0;
         private int CURRENT_EMOTE_1 = 0;
         private int CURRENT_EMOTE_2 = 0;
+        private int CURRENT_EMOTE_3 = 0;
 
         private int FRAME_RATE = 30;
 
@@ -44,11 +50,13 @@ namespace Desktop_Gremlin
         private BitmapImage WALK_RIGHT_SHEET;   
         private BitmapImage EMOTE1_SHEET;
         private BitmapImage EMOTE2_SHEET;
+        private BitmapImage EMOTE3_SHEET;   
 
         private DispatcherTimer WALK_TIMER;   
         private DispatcherTimer IDLE_TIMER;
         private DispatcherTimer GRAB_TIMER;
         private DispatcherTimer EMOTE1_TIMER;
+        private DispatcherTimer EMOTE3_TIMER;   
 
         private bool IS_INTRO = true;
         private bool IS_IDLE = true;
@@ -58,9 +66,10 @@ namespace Desktop_Gremlin
         private bool LAST_STATE_DRAG_OR_WALK = false;
         private bool IS_EMOTING1 = true;
         private bool IS_EMOTING2 = false;
+        private bool IS_EMOTING3 = false;
 
         private bool FOLLOW_CURSOR = false;
-        private Point LAST_CURSOR_POSITION;
+        private System.Drawing.Point LAST_CURSOR_POSITION;
         private double FOLLOW_SPEED = 5.0;
         private DateTime LAST_CURSOR_MOVE_TIME;
         private double MOUSE_DELTAX = 0;
@@ -86,7 +95,9 @@ namespace Desktop_Gremlin
         private bool MOVE_DOWN = false;
         public SpriteSheet()
         {
-            InitializeComponent(); 
+            InitializeComponent();
+            this.ShowInTaskbar = false; 
+            SetupTrayIcon();
             LoadConfig();
             LoadSpritesSheet();
             InitializeAnimations();
@@ -98,18 +109,17 @@ namespace Desktop_Gremlin
 
             if (!File.Exists(path))
             {
-                MessageBox.Show(
-                    $"Missing sprite file / Wrong File name Format:\n{fileName}\n\nPath: {path}",
-                    "Sprite Load Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
+                System.Windows.MessageBox.Show(
+                  $"Missing sprite file / Wrong File name Format:\n{fileName}\n\nPath: {path}",
+                  "Sprite Load Error",
+                  MessageBoxButton.OK,
+                  MessageBoxImage.Error
                 );
-                Application.Current.Shutdown(); 
-                return null;
+                System.Windows.Application.Current.Shutdown();
             }
 
             var image = new BitmapImage();
-            image.BeginInit();
+            image.BeginInit();              
             image.UriSource = new Uri(path);
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.EndInit();
@@ -118,7 +128,7 @@ namespace Desktop_Gremlin
         }
         private void LoadSpritesSheet()
         {
-            IDLE_SHEET = LoadSprite("Idle.png");
+            IDLE_SHEET = LoadSprite("idle.png");
             GRAB_SHEET = LoadSprite("grab.png");
             WALK_DOWN_SHEET = LoadSprite("run_down.png");
             WALK_UP_SHEET = LoadSprite("run_up.png");
@@ -126,6 +136,7 @@ namespace Desktop_Gremlin
             WALK_RIGHT_SHEET = LoadSprite("run_right.png");
             EMOTE1_SHEET = LoadSprite("emote1.png");
             EMOTE2_SHEET = LoadSprite("emote2.png");
+            EMOTE3_SHEET = LoadSprite("emote3.png");
         }
         private int PlayAnimationFrame(BitmapImage sheet, int currentFrame, int frameCount, int columns = 5)
         {
@@ -144,7 +155,7 @@ namespace Desktop_Gremlin
 
             return (currentFrame + 1) % frameCount;
         }
-
+       
         private void InitializeAnimations()
         {
 
@@ -226,6 +237,7 @@ namespace Desktop_Gremlin
                             else
                                 CURRENT_WALK_UP_FRAME = PlayAnimationFrame(WALK_UP_SHEET, CURRENT_WALK_UP_FRAME, WALK_UP_FRAME);
                         }
+                        //For Debugging purposes//
                         //SpriteLabel.Content = Math.Abs(distance).ToString() + dx.ToString() + " " + dy.ToString();
                     }
                     else
@@ -296,7 +308,7 @@ namespace Desktop_Gremlin
 
             IS_DRAGGING = false;
         }
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Left)
             {
@@ -327,7 +339,7 @@ namespace Desktop_Gremlin
                 FOLLOW_CURSOR = !FOLLOW_CURSOR;
             }
         }
-        private void Window_KeyUp(object sender, KeyEventArgs e)
+        private void Window_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Left) MOVE_LEFT = false;
             if (e.Key == Key.Right) MOVE_RIGHT = false;
@@ -340,8 +352,15 @@ namespace Desktop_Gremlin
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
             if (!File.Exists(path))
-                return; 
-
+            {
+                System.Windows.MessageBox.Show(
+                   "Where the Fuu is the config file!?",
+                   "No Config File",
+                   MessageBoxButton.OK,
+                   MessageBoxImage.Error
+               );
+            }
+               
             foreach (var line in File.ReadAllLines(path))
             {
                 if (string.IsNullOrWhiteSpace(line) || !line.Contains("="))
@@ -368,10 +387,52 @@ namespace Desktop_Gremlin
                     case "WALK_LEFT_FRAME": WALK_LEFT_FRAME = intValue; break;
                     case "WALK_RIGHT_FRAME": WALK_RIGHT_FRAME = intValue; break;
                     case "EMOTE1_FRAME_COUNT": EMOTE1_FRAME_COUNT = intValue; break;
-                    case "EMOTE2_FRAME_COUNT": EMOTE2_FRAME_COUNT = intValue; break;    
+                    case "EMOTE2_FRAME_COUNT": EMOTE2_FRAME_COUNT = intValue; break;
+                    case "EMOTE3_FRAME_COUNT": EMOTE3_FRAME_COUNT = intValue; break;
                     case "FRAME_RATE": FRAME_RATE = intValue; break;
                 }
             }
+        }
+        private void SetupTrayIcon()
+        {
+            TRAY_ICON = new NotifyIcon();
+            TRAY_ICON.Icon = new Icon("icon.ico");
+            TRAY_ICON.Visible = true;
+            TRAY_ICON.Text = "Desktop Gremlin";
+
+            var menu = new ContextMenuStrip();
+            menu.Items.Add("Reappear", null, (s, e) => ResetApp());
+            menu.Items.Add("Explode (Close)", null, (s, e) => CloseApp());
+
+
+            TRAY_ICON.ContextMenuStrip = menu;
+        }
+        private void ResetApp()
+        {
+            TRAY_ICON.Visible = false;
+            string exePath = Process.GetCurrentProcess().MainModule.FileName;
+            Process.Start(exePath);
+            System.Windows.Application.Current.Shutdown();
+        }
+
+        private void CloseApp()
+        {
+            EMOTE1_TIMER.Stop();
+            WALK_TIMER.Stop();
+            GRAB_TIMER.Stop();
+            IDLE_TIMER.Stop();
+            EMOTE3_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(FRAME_RATE) };
+            EMOTE3_TIMER.Tick += (s, e) =>
+            {
+                CURRENT_EMOTE_3 = PlayAnimationFrame(EMOTE3_SHEET, CURRENT_EMOTE_3, EMOTE3_FRAME_COUNT);
+                if (CURRENT_EMOTE_3 == 0)
+                {
+                    EMOTE3_TIMER.Stop();
+                    TRAY_ICON.Visible = false;
+                    System.Windows.Application.Current.Shutdown();
+                }
+            };
+            EMOTE3_TIMER.Start();
         }
 
     }
