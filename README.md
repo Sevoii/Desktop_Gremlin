@@ -1,6 +1,6 @@
 # ✨ A NEW WAY TO ANNOY YOURSELF 
 
-**Agnes Tachyon can now annoy you while you stare idly into the dark abyss knowns as your computer.**
+**Agnes Tachyon can now annoy you while you stare idly into the dark abyss known as your computer.**
 
 # 📄 Gremlin - WIP Report any Screw Ups
 A fun little WPF application that displays an animated sprite on your desktop. Agnes is just gremlin that I choose because of reasons (Best uma).
