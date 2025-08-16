@@ -2,7 +2,7 @@
 
 **Agnes Tachyon can now annoy you while you stare idly into the dark abyss knowns as your computer.**
 
-# 📄 Gremlin
+# 📄 Gremlin - WIP Report any Screw Ups
 A fun little WPF application that displays an animated sprite on your desktop. Agnes is just gremlin that I choose because of reasons (Best uma).
 You can drag and shake her around, follow your curosr and be annoying as she blocks your mouse. This project is WIP 
 
