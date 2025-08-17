@@ -1,8 +1,8 @@
-# ✨ A NEW WAY TO ANNOY YOURSELF 
+(# ✨ A NEW WAY TO ANNOY YOURSELF 
 
 **Agnes Tachyon can now annoy you while you stare idly into the dark abyss known as your computer.**
 
-DOWNLOAD THE RELEASE: [AGNES](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v.1.2/Desktop_Gremlin_Tachyon.zip)
+DOWNLOAD THE RELEASE: [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v.1.2/Desktop_Gremlin_Tachyon.zip)
 
 
 ![idle-ezgif com-crop](https://github.com/user-attachments/assets/97495dc4-1a5c-4e11-ac2f-cbf3c882adfe)
