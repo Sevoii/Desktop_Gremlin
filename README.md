@@ -1,6 +1,6 @@
 (# ✨ A NEW WAY TO ANNOY YOURSELF 
 
-**Agnes Tachyon can now annoy you while you stare idly into the dark abyss known as your computer.**
+**Agnes Tachyon | Mambo can now annoy you while you stare idly into the dark abyss known as your computer.**
 
 DOWNLOAD THE RELEASE: [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v.1.2/Desktop_Gremlin_Tachyon.zip)
 
