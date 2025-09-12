@@ -12,31 +12,14 @@
         Topmost="True"
         ResizeMode="NoResize" BorderThickness="0" BorderBrush="Black">
     <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseRightButtonDown="SpriteImage_RightClick">
-        <Image Name="JukeBoxSprite"
-          Width="139" Height="237"
-          HorizontalAlignment="Left"
-          VerticalAlignment="Top"
-          Canvas.Top="20"  Margin="40,20,0,0"/>
-        <Image Name="JukeBoxSpriteFunny"
-           Width="139" Height="167"  
-           HorizontalAlignment="Left"
-           VerticalAlignment="Top"
-           Canvas.Top="20"  Margin="40,90,0,0"/>
         <Image Name="SpriteImage"
            Width="186" Height="200"
            HorizontalAlignment="Left"
            VerticalAlignment="Top"
-           Canvas.Top="20"  Margin="170,35,0,0" RenderTransformOrigin="0.5,0.5" MouseEnter="SpriteImage_MouseEnter"
-       MouseLeave="SpriteImage_MouseLeave">
+           Canvas.Top="20"  Margin="125,35,0,0" RenderTransformOrigin="0.484,0.525" MouseEnter="SpriteImage_MouseEnter"
+            MouseLeave="SpriteImage_MouseLeave">
         </Image>
-        
-        <Label x:Name="SpriteLabel"
-            Content=""
-            Background="Transparent"
-            Foreground="Transparent"
-            FontWeight="Bold"
-            FontSize="14"
-            VerticalContentAlignment="Center" RenderTransformOrigin="-0.145,-0.349" HorizontalAlignment="Left" VerticalAlignment="Top" Width="175" Canvas.Left="45" Canvas.Top="6" Margin="115,1,0,0" Height="104"/>
+             
     </Grid>
 
 </Window>

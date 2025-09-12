@@ -9,36 +9,31 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.IO;
-
-
+using System.Media;
 namespace Desktop_Gremlin
 {
-    /// <summary>
-    /// Interaction logic for Jukebox.xaml
-    /// </summary>
+
     public partial class Gremlin : Window
     {
+
+
+        //To those reading this, I'm sorry for this messy code, or not//
+        //In the future I'm planning to seperate major code snippets into diffrent class files//
+        //Instead of barfing evrything in 1 file//
+        //Thanks and have a Mamboful day//
         private NotifyIcon TRAY_ICON;
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool GetCursorPos(out POINT lpPoint);
-
-
-
-        public class AppSettings
+        public static class Settings
         {
-            public int FrameRate { get; set; } = 31;
-            public string StartingChar { get; set; } = "Mambo";
-            public double FollowRadius { get; set; } = 150.0;
-            public int FrameWidthJukebox { get; set; } = 300;
-            public int FrameHeightJukebox { get; set; } = 450;
-            public int FrameWidth { get; set; } = 300;
-            public int FrameHeight { get; set; } = 300;
-
+            public static int SpriteColumn { get; set; } = 10;
+            public static int FrameRate { get; set; } = 31;
+            public static string StartingChar { get; set; } = "Mambo";
+            public static double FollowRadius { get; set; } = 150.0;
+            public static int FrameWidth { get; set; } = 200;
+            public static int FrameHeight { get; set; } = 200;
         }
-
-        public AppSettings Settings = new AppSettings();
-
         public class AnimationFrameCounts
         {
             public int Intro { get; set; } = 0;
@@ -53,23 +48,10 @@ namespace Desktop_Gremlin
             public int Click { get; set; } = 0;
             public int Dance { get; set; } = 0;
             public int Hover { get; set; } = 0;
-            public int Jukebox { get; set; } = 22;
-            public int JukeboxFunny { get; set; } = 17;
-            public int MusicNote { get; set; } = 123;
+            public int Sleep { get; set; } = 0; 
         }
-        private AnimationFrameCounts FrameCounts = new AnimationFrameCounts();
-
-
-        private MediaPlayer GRAB_PLAYER = new MediaPlayer();
-
-        private const int SPRITE_COLUMN = 5;
-
-        public class AnimationState
+        public class AnimationFrame
         {
-            public int JukeboxFunny { get; set; } = 0;
-            public int Jukebox { get; set; } = 0;
-            public int MusicNote { get; set; } = 0;
-            public int MascotIndex { get; set; } = 0;
             public int Intro { get; set; } = 0;
             public int Idle { get; set; } = 0;
             public int Outro { get; set; } = 0;
@@ -82,162 +64,238 @@ namespace Desktop_Gremlin
             public int Click { get; set; } = 0;
             public int Dance { get; set; } = 0;
             public int Hover { get; set; } = 0;
+            public int Sleep { get; set; } = 0; 
         }
-        private AnimationState CurrentFrames = new AnimationState();
-
-
-        public class AnimationSheets
-        {
-            public BitmapImage Intro { get; set; }
-            public BitmapImage Idle { get; set; }
-            public BitmapImage WalkDown { get; set; }
-            public BitmapImage WalkUp { get; set; }
-            public BitmapImage WalkLeft { get; set; }
-            public BitmapImage WalkRight { get; set; }
-            public BitmapImage Outro { get; set; }
-            public BitmapImage WalkIdle { get; set; }
-            public BitmapImage Click { get; set; }
-            public BitmapImage Dance { get; set; }
-            public BitmapImage Grab { get; set; }
-            public BitmapImage Jukebox { get; set; }
-            public BitmapImage JukeboxFunny { get; set; }
-            public BitmapImage Hover { get; set; }
-        }
-        private AnimationSheets Sheets = new AnimationSheets();
-
-
-
         public class State
         {
             public bool PlayIntroOnNewSong { get; set; } = true;
             public bool IsIntro { get; set; } = true;
-            public bool IsIntroJukebox { get; set; } = true;
             public bool ForwardAnimation { get; set; } = true;
-            public bool AllowRandomMascot { get; set; } = true;
-            public bool AllowMusicNotes { get; set; } = true;
             public bool IsRandom { get; set; } = false;
             public bool IsHover { get; set; } = false;
             public bool IsIdle { get; set; } = true;
             public bool IsWalking { get; set; } = false;
             public bool IsDragging { get; set; } = false;
-            public bool LastDragState { get; set; } = false;
-            public bool LastStateDragOrWalk { get; set; } = false;
             public bool IsWalkIdle { get; set; } = false;
             public bool IsClick { get; set; } = false;
             public bool IsEmoting3 { get; set; } = false;
+            public bool IsSleeping { get; set; } = false;   
         }
-        private State States = new State();
-
         public class MouseSettings
         {
             public bool FollowCursor { get; set; } = false;
             public System.Drawing.Point LastMousePosition { get; set; }
             public double FollowSpeed { get; set; } = 5.0;
-            public DateTime LastCursorMove { get; set; } 
-            public double MouseX { get; set; } 
+            public DateTime LastCursorMove { get; set; }
+            public double MouseX { get; set; }
             public double MouseY { get; set; }
             public double Speed { get; set; } = 10.0;
 
         }
-       private MouseSettings Mouse = new MouseSettings();
+        public MouseSettings Mouse = new MouseSettings();
+        public AnimationFrame CurrentFrames = new AnimationFrame();
+        public State States = new State();
+        public AnimationFrameCounts FrameCounts = new AnimationFrameCounts();
 
-
-        private DispatcherTimer CLOSE_TIMER;
-        private DispatcherTimer MASTER_TIMER;
-        private DispatcherTimer SCROLL_TIMER;
-
-
-        private double SCROLL_POS;
-
-        private List<string> MASCOTS = new List<string>();
-        private List<string> MUSIC_FILES = new List<string>();
-
-        private MediaPlayer PLAYER;
-
+        private DispatcherTimer _closeTimer;
+        private DispatcherTimer _masterTimer;
+        private DispatcherTimer _idleTimer;
+        MediaPlayer player = new MediaPlayer();
         public struct POINT
         {
             public int X;
             public int Y;
         }
 
+ 
         public Gremlin()
         {
-            InitializeComponent();
+
             this.ShowInTaskbar = false;
+            InitializeComponent();
+            SpriteImage.Source = new CroppedBitmap();
             LoadMasterConfig();
             LoadConfigChar();
             SetupTrayIcon();
-            LoadSpritesSheet();
             InitializeAnimations();
-
+            PlaySound("intro.wav");
+            _idleTimer = new DispatcherTimer();
+            _idleTimer.Interval = TimeSpan.FromSeconds(120);
+            _idleTimer.Tick += IdleTimer_Tick; ;
+            _idleTimer.Start();
         }
-        private BitmapImage LoadSprite(string filefolder, string fileName, string rootFolder = "Gremlins")
+   
+        //TODO: Put this on a seperate class
+        public static class SpriteManager
         {
-            
-            string path = System.IO.Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                "SpriteSheet", rootFolder, filefolder, fileName);
-
-            if (!File.Exists(path))
+            private static readonly Dictionary<string, BitmapImage> Cache = new Dictionary<string, BitmapImage>();
+            private static readonly HashSet<string> AlwaysCached = new HashSet<string>()
             {
-                return null;
+                "idle", "left", "right", "forward", "backward", "widle"
+            };
+
+            private static string _currentExtra = null;
+
+            public static BitmapImage Get(string animationName)
+            {
+                animationName = animationName.ToLower();
+
+                if (Cache.TryGetValue(animationName, out var sheet))
+                {
+                    return sheet;
+                }
+
+                string fileName = GetFileName(animationName);
+                if (fileName == null)
+                {
+                    NormalError("Unknown animation requested: " + animationName, "Sprite Error");
+                    return null;
+                }
+                sheet = LoadSprite(Settings.StartingChar, fileName);
+                if (sheet != null)
+                {
+                    Cache[animationName] = sheet;
+                    if (!AlwaysCached.Contains(animationName))
+                    {
+                        if (_currentExtra != null && _currentExtra != animationName)
+                        {
+                            Cache.Remove(_currentExtra);
+                        }
+                        _currentExtra = animationName;
+                    }
+                }
+
+                return sheet;
+            }
+            private static string GetFileName(string animationName)
+            {
+                switch (animationName.ToLower())
+                {
+                    case "idle": 
+                        return "idle.png";
+                    case "intro": 
+                        return "intro.png";
+                    case "left": 
+                        return "left.png";
+                    case "right": 
+                        return "right.png";
+                    case "forward": 
+                        return "forward.png";
+                    case "backward": 
+                        return "backward.png";
+                    case "outro": 
+                        return "outro.png";
+                    case "grab": 
+                        return "grab.png";
+                    case "widle": 
+                        return "wIdle.png";
+                    case "click": 
+                        return "click.png";
+                    case "hover": 
+                        return "hover.png";
+                    case "sleep":
+                        return "sleep.png";
+                    default: 
+                        return null;
+                }
             }
 
-            try
+            public static void Unload(string animationName)
             {
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.UriSource = new Uri(path);
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.EndInit();
-                image.Freeze();
-                return image;
+                if (AlwaysCached.Contains(animationName.ToLower()))
+                {
+                    return;
+                }
+                Cache.Remove(animationName);
             }
-            catch (Exception ex)
+            public static void PruneCache()
             {
-                Debug.WriteLine($"[Error] Failed to load sprite {fileName}: {ex.Message}");
-                return null;
+                var keysToRemove = new List<string>();
+
+                foreach (var key in Cache.Keys)
+                {
+                    if (!AlwaysCached.Contains(key.ToLower()))
+                    {
+                        keysToRemove.Add(key);
+                    }
+                }
+
+                foreach (var key in keysToRemove)
+                {
+                    Cache.Remove(key);
+                }
+            }
+
+            private static BitmapImage LoadSprite(string filefolder, string fileName, string rootFolder = "Gremlins")
+            {
+                string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                    "SpriteSheet", rootFolder, filefolder, fileName);
+
+                if (!File.Exists(path))
+                    return null;
+
+                try
+                {
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.UriSource = new Uri(path);
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.EndInit();
+                    image.Freeze();
+                    return image;
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
 
-        private void LoadSpritesSheet()
-        {
-            Sheets.Intro = LoadSprite(Settings.StartingChar, "intro.png");
-            Sheets.Idle = LoadSprite(Settings.StartingChar, "idle.png");
-            Sheets.WalkLeft = LoadSprite(Settings.StartingChar, "left.png");
-            Sheets.WalkRight = LoadSprite(Settings.StartingChar, "right.png");
-            Sheets.WalkDown = LoadSprite(Settings.StartingChar, "forward.png");
-            Sheets.WalkUp = LoadSprite(Settings.StartingChar, "backward.png");
-            Sheets.Outro = LoadSprite(Settings.StartingChar, "outro.png");
-            Sheets.Grab = LoadSprite(Settings.StartingChar, "grab.png");
-            Sheets.WalkIdle = LoadSprite(Settings.StartingChar, "wIdle.png");
-            Sheets.Click = LoadSprite(Settings.StartingChar, "click.png");
-            Sheets.Hover = LoadSprite(Settings.StartingChar, "hover.png");
+        //Former code where I just laod every sprite at once
+        //keep just in case
+        //private void LoadSpritesSheet()
+        //{
+        //    Sheets.Idle = LoadSprite(Settings.StartingChar, "idle.png");
+        //    Sheets.Intro = LoadSprite(Settings.StartingChar, "intro.png");
+        //    Sheets.WalkLeft = LoadSprite(Settings.StartingChar, "left.png");
+        //    Sheets.WalkRight = LoadSprite(Settings.StartingChar, "right.png");
+        //    Sheets.WalkDown = LoadSprite(Settings.StartingChar, "forward.png");
+        //    Sheets.WalkUp = LoadSprite(Settings.StartingChar, "backward.png");
+        //    Sheets.Outro = LoadSprite(Settings.StartingChar, "outro.png");
+        //    Sheets.Grab = LoadSprite(Settings.StartingChar, "grab.png");
+        //    Sheets.WalkIdle = LoadSprite(Settings.StartingChar, "wIdle.png");
+        //    Sheets.Click = LoadSprite(Settings.StartingChar, "click.png");
+        //    Sheets.Hover = LoadSprite(Settings.StartingChar, "hover.png");
 
-            // special non-character ones
-            Sheets.Jukebox = LoadSprite("Jukebox", "jukebox.png");
-            Sheets.JukeboxFunny = LoadSprite("Jukebox", "music_box_goofy.png");
-        }
 
+        //}
 
         //Mainly for the user, This will be updated or debugging purposes
         //To many edge cases for the program to crash.
-        private void FatalError(string message, string title = "Error")
+        public static void FatalError(string message, string title = "Error")
         {
             System.Windows.MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-            TRAY_ICON?.Dispose();
             System.Windows.Application.Current.Shutdown();
+        }
+        public static void NormalError(string message, string title = "Error")
+        {
+            System.Windows.MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
         private int PlayAnimation(BitmapImage sheet, int currentFrame, int frameCount, int frameWidth, int frameHeight, System.Windows.Controls.Image targetImage, bool reverse = false)
         {
             if (sheet == null)
+            {
+                NormalError("Animation sheet missing or failed to load.", "Animation Error");
                 return currentFrame;
+            }
 
-            int x = (currentFrame % SPRITE_COLUMN) * frameWidth;
-            int y = (currentFrame / SPRITE_COLUMN) * frameHeight;
+            int x = (currentFrame % Settings.SpriteColumn) * frameWidth;
+            int y = (currentFrame / Settings.SpriteColumn) * frameHeight;
 
             if (x + frameWidth > sheet.PixelWidth || y + frameHeight > sheet.PixelHeight)
+            {
                 return currentFrame;
+            }
 
             targetImage.Source = new CroppedBitmap(sheet, new Int32Rect(x, y, frameWidth, frameHeight));
 
@@ -250,31 +308,44 @@ namespace Desktop_Gremlin
                 if (States.ForwardAnimation)
                 {
                     currentFrame++;
-                    if (currentFrame >= frameCount - 1) States.ForwardAnimation = false;
+
+                    if (currentFrame >= frameCount - 1)
+                    {
+                        States.ForwardAnimation = false;
+                    } 
                 }
                 else
                 {
                     currentFrame--;
-                    if (currentFrame <= 0) States.ForwardAnimation = true;
+                    if (currentFrame <= 0)
+                    {
+                        States.ForwardAnimation = true;
+                    } 
                 }
                 return currentFrame;
             }
         }
-
         private void InitializeAnimations()
         {
-            if (Sheets.Intro == null)
-            {
-                States.IsIntro = false;
-            }
 
-            MASTER_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Settings.FrameRate) };
-            MASTER_TIMER.Tick += (s, e) =>
+            _masterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000.0 / Settings.FrameRate) };
+            _masterTimer.Tick += (s, e) =>
             {
+                if(States.IsSleeping && !States.IsIntro)
+                {
+                    CurrentFrames.Sleep =
+                    PlayAnimation(
+                    SpriteManager.Get("sleep"),
+                    CurrentFrames.Sleep,
+                    FrameCounts.Sleep,
+                    Settings.FrameWidth,
+                    Settings.FrameHeight,   
+                    SpriteImage);
+                }   
                 if (States.IsIntro)
                 {
                     CurrentFrames.Intro = PlayAnimation(
-                        Sheets.Intro,
+                        SpriteManager.Get("intro"),
                         CurrentFrames.Intro,
                         FrameCounts.Intro,
                         Settings.FrameWidth,
@@ -283,40 +354,27 @@ namespace Desktop_Gremlin
 
                     if (CurrentFrames.Intro == 0)
                     {
-                        States.IsIntroJukebox = false;
                         States.IsIntro = false;
                     }
                 }
-
-                if (States.IsIntroJukebox)
-                {
-                    CurrentFrames.Jukebox = PlayAnimation(
-                        Sheets.Jukebox,
-                        CurrentFrames.Jukebox,
-                        FrameCounts.Jukebox,
-                        Settings.FrameWidthJukebox,
-                        Settings.FrameHeightJukebox,
-                        JukeBoxSprite);
-                }
-
                 if (States.IsDragging)
                 {
                     CurrentFrames.Grab = PlayAnimation(
-                        Sheets.Grab,
+                        SpriteManager.Get("grab"),
                         CurrentFrames.Grab,
                         FrameCounts.Grab,
                         Settings.FrameWidth,
                         Settings.FrameHeight,
                         SpriteImage);
-
                     States.IsIntro = false;
                     States.IsClick = false;
+                    States.IsSleeping = false;
                 }
 
-                if (States.IsHover && !States.IsDragging)
+                if (States.IsHover && !States.IsDragging && !States.IsSleeping)
                 {
                     CurrentFrames.Hover = PlayAnimation(
-                        Sheets.Hover,
+                        SpriteManager.Get("hover"),
                         CurrentFrames.Hover,
                         FrameCounts.Hover,
                         Settings.FrameWidth,
@@ -327,7 +385,7 @@ namespace Desktop_Gremlin
                 if (States.IsClick)
                 {
                     CurrentFrames.Click = PlayAnimation(
-                        Sheets.Click,
+                        SpriteManager.Get("click"),
                         CurrentFrames.Click,
                         FrameCounts.Click,
                         Settings.FrameWidth,
@@ -335,17 +393,16 @@ namespace Desktop_Gremlin
                         SpriteImage);
 
                     States.IsIntro = false;
-
+                    States.IsSleeping = false;
                     if (CurrentFrames.Click == 0)
                     {
                         States.IsClick = false;
                     }
                 }
-
-                if (!States.IsIntro && !States.IsDragging && !States.IsWalkIdle && !States.IsClick && !States.IsHover)
+                if (!States.IsSleeping && !States.IsIntro && !States.IsDragging && !States.IsWalkIdle && !States.IsClick && !States.IsHover)
                 {
                     CurrentFrames.Idle = PlayAnimation(
-                        Sheets.Idle,
+                        SpriteManager.Get("idle"),
                         CurrentFrames.Idle,
                         FrameCounts.Idle,
                         Settings.FrameWidth,
@@ -353,7 +410,7 @@ namespace Desktop_Gremlin
                         SpriteImage);
                 }
 
-                if (Mouse.FollowCursor && !States.IsDragging && !States.IsClick)
+                if (Mouse.FollowCursor && !States.IsDragging && !States.IsClick && !States.IsSleeping)
                 {
                     POINT cursorPos;
                     GetCursorPos(out cursorPos);
@@ -363,6 +420,10 @@ namespace Desktop_Gremlin
                     double halfH = SpriteImage.ActualHeight > 0 ? SpriteImage.ActualHeight / 2.0 : Settings.FrameHeight / 2.0;
                     var spriteCenterScreen = SpriteImage.PointToScreen(new System.Windows.Point(halfW, halfH));
 
+
+                    //This is prob the most mind boggling code that I can find
+                    //The prev iteration is the sprite would be offsetted to thr right because
+                    //wpf screen use top-left instead of pure coorindates yada yada  ///
                     var source = PresentationSource.FromVisual(this);
                     System.Windows.Media.Matrix transformFromDevice = System.Windows.Media.Matrix.Identity;
                     if (source?.CompositionTarget != null)
@@ -393,7 +454,7 @@ namespace Desktop_Gremlin
                             if (moveX < 0)
                             {
                                 CurrentFrames.WalkLeft = PlayAnimation(
-                                    Sheets.WalkLeft,
+                                     SpriteManager.Get("left"),
                                     CurrentFrames.WalkLeft,
                                     FrameCounts.Left,
                                     Settings.FrameWidth,
@@ -403,7 +464,7 @@ namespace Desktop_Gremlin
                             else
                             {
                                 CurrentFrames.WalkRight = PlayAnimation(
-                                    Sheets.WalkRight,
+                                     SpriteManager.Get("right"),
                                     CurrentFrames.WalkRight,
                                     FrameCounts.Right,
                                     Settings.FrameWidth,
@@ -416,7 +477,7 @@ namespace Desktop_Gremlin
                             if (moveY > 0)
                             {
                                 CurrentFrames.WalkDown = PlayAnimation(
-                                    Sheets.WalkDown,
+                                     SpriteManager.Get("forward"),
                                     CurrentFrames.WalkDown,
                                     FrameCounts.Down,
                                     Settings.FrameWidth,
@@ -426,7 +487,7 @@ namespace Desktop_Gremlin
                             else
                             {
                                 CurrentFrames.WalkUp = PlayAnimation(
-                                    Sheets.WalkUp,
+                                     SpriteManager.Get("backward"),
                                     CurrentFrames.WalkUp,
                                     FrameCounts.Up,
                                     Settings.FrameWidth,
@@ -434,14 +495,11 @@ namespace Desktop_Gremlin
                                     SpriteImage);
                             }
                         }
-
-                        SpriteLabel.Content =
-                            $"dist={distance:F1}\nmoveX={moveX:F1}, moveY={moveY:F1}\nsprCenter=({spriteCenterWpf.X:F1},{spriteCenterWpf.Y:F1})";
                     }
                     else
                     {
                         CurrentFrames.WalkIdle = PlayAnimation(
-                            Sheets.WalkIdle,
+                            SpriteManager.Get("wIdle"),
                             CurrentFrames.WalkIdle,
                             FrameCounts.WalkIdle,
                             Settings.FrameWidth,
@@ -451,20 +509,9 @@ namespace Desktop_Gremlin
                 }
             };
 
-            MASTER_TIMER.Start();
+            _masterTimer.Start();
         }
-
-
-
-
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            States.IsDragging = true;
-            //PlaySound("grab.mp3", restart: true, playerOverride: GRAB_PLAYER);      
-            DragMove(); // only if you actually move it
-            States.IsDragging = false;
-            Mouse.FollowCursor = !Mouse.FollowCursor;
-        }
+      
 
         private void ResetApp()
         {
@@ -473,50 +520,60 @@ namespace Desktop_Gremlin
             Process.Start(exePath);
             System.Windows.Application.Current.Shutdown();
         }
-
         private void CloseApp()
         {
-            MASTER_TIMER.Stop();
+            _masterTimer.Stop();
 
-            CLOSE_TIMER = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(Settings.FrameRate) };
-            CLOSE_TIMER.Tick += (s, e) =>
+            _closeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000.0 / Settings.FrameRate) };
+            _closeTimer.Tick += (s, e) =>
             {
-                CurrentFrames.Outro = PlayAnimation(
-                    Sheets.Outro,
-                    CurrentFrames.Outro,
-                    FrameCounts.Outro,
-                    Settings.FrameWidth,
-                    Settings.FrameHeight,
-                    SpriteImage);
-
-                if (CurrentFrames.Outro == 0)
+                try
                 {
+                    CurrentFrames.Outro = PlayAnimation(
+                        SpriteManager.Get("outro"),
+                        CurrentFrames.Outro,
+                        FrameCounts.Outro,
+                        Settings.FrameWidth,
+                        Settings.FrameHeight,
+                        SpriteImage);
+
+                    if (CurrentFrames.Outro == 0)
+                    {
+                        TRAY_ICON.Visible = false;
+                        TRAY_ICON?.Dispose();
+                        System.Windows.Application.Current.Shutdown();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    
                     TRAY_ICON.Visible = false;
-                    TRAY_ICON?.Dispose();
+                    TRAY_ICON?.Dispose();               
                     System.Windows.Application.Current.Shutdown();
                 }
             };
 
-            CLOSE_TIMER.Start();
+            _closeTimer.Start();
+
         }
 
         private void SetupTrayIcon()
         {
             TRAY_ICON = new NotifyIcon();
-            TRAY_ICON.Icon = new Icon("icon.ico");
+           
+            if (File.Exists("icon.ico"))
+            {
+                TRAY_ICON.Icon = new Icon("icon.ico");
+            }
+            else
+            {
+                TRAY_ICON.Icon = SystemIcons.Application;
+            }        
+ 
             TRAY_ICON.Visible = true;
-            TRAY_ICON.Text = "Jukebox";
+            TRAY_ICON.Text = "Gremlin";
 
             var menu = new ContextMenuStrip();
-
-            var randomChar = new ToolStripMenuItem("Random Characters") { CheckOnClick = true };
-            randomChar.CheckedChanged += (s, e) =>
-            {
-                States.AllowRandomMascot = randomChar.Checked;
-            };
-
-
-            menu.Items.Add(randomChar);
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Reappear", null, (s, e) => ResetApp());
             menu.Items.Add("Close", null, (s, e) => CloseApp());
@@ -524,81 +581,32 @@ namespace Desktop_Gremlin
             TRAY_ICON.ContextMenuStrip = menu;
         }
 
-        
-        private void PlaySound(string fileName, bool restart = false, MediaPlayer playerOverride = null)
+
+        private void PlaySound(string fileName)
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sounds", fileName);
 
             if (!File.Exists(path))
             {
-                Debug.WriteLine($"[Warning] Missing sound: {path}");
                 return;
             }
 
             try
             {
-                MediaPlayer player = playerOverride ?? new MediaPlayer();
-
-                if (restart)
+                using (SoundPlayer sp = new SoundPlayer(path))
                 {
-                    player.Stop();
-                    player.Open(new Uri(path));
-                    player.Volume = 0.8;
-                    player.Play();
-                }
-                else
-                {
-                    player.Open(new Uri(path));
-                    player.Volume = 0.8;
-                    player.Play();
-
-                    if (playerOverride == null)
-                    {
-                        player.MediaEnded += (s, e) => player.Close();
-                    }
+                    sp.Play();
                 }
             }
             catch (Exception ex)
             {
-
+             
             }
         }
-        private void SwitchToRandomCharacter()
-        {
-            if (MASCOTS == null || MASCOTS.Count == 0)
-            {
-                return;
-            }
-
-            // clear current sheets and image
-            Sheets.Intro = null;
-            Sheets.Idle = null;
-            SpriteImage.Source = null;
-
-            GC.Collect();
-
-            var rand = new Random();
-            string randomChar = MASCOTS[rand.Next(MASCOTS.Count)];
-
-            Settings.StartingChar = randomChar;
-            LoadConfigChar();
-
-            // load new sheets
-            Sheets.Intro = LoadSprite(randomChar, "intro.png");
-            Sheets.Idle = LoadSprite(randomChar, "dance.png");
-
-            // reset animation states
-            CurrentFrames.Intro = 0;
-            CurrentFrames.Idle = 0;
-
-            States.IsIntro = true;
-        }
-
-
 
         private void LoadMasterConfig()
         {
-            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.txt");
+            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
             if (!File.Exists(path))
             {
                 FatalError("Cannot find the config file for the main directory", "Missing Config File");
@@ -627,22 +635,6 @@ namespace Desktop_Gremlin
                             Settings.StartingChar = value;
                             break;
                         }
-                    case "ALLOW_RANDOM_MASCOT":
-                        {
-                            if (bool.TryParse(value, out bool boolValue))
-                            {
-                                States.AllowRandomMascot = boolValue;
-                            }
-                            break;
-                        }
-                    case "ALLOW_MUSIC_NOTES":
-                        {
-                            if (bool.TryParse(value, out bool boolValue2))
-                            {
-                                States.AllowMusicNotes = boolValue2;
-                            }
-                            break;
-                        }
                     case "SPRITE_SPEED":
                         {
                             if (int.TryParse(value, out int intValue))
@@ -659,6 +651,30 @@ namespace Desktop_Gremlin
                             }
                             break;
                         }
+                    case "SPRITE_COLUMN":
+                        {
+                            if (int.TryParse(value, out int intValue))
+                            {
+                                Settings.SpriteColumn = intValue;
+                            }
+                            break;
+                        }
+                    case "FRAME_HEIGHT":
+                        {
+                            if (int.TryParse(value, out int intValue))
+                            {
+                                Settings.FrameHeight = intValue;
+                            }
+                            break;
+                        }
+                    case "FRAME_WIDTH":
+                        {
+                            if (int.TryParse(value, out int intValue))
+                            {
+                                Settings.FrameWidth = intValue;
+                            }
+                        }
+                        break;
                 }
             }
         }
@@ -694,15 +710,8 @@ namespace Desktop_Gremlin
                 {
                     continue;
                 }
-
                 switch (key.ToUpper())
                 {
-                    case "FRAME_HEIGHT":
-                        Settings.FrameHeight = intValue;
-                        break;
-                    case "FRAME_WIDTH":
-                        Settings.FrameWidth = intValue;
-                        break;
                     case "FRAME_RATE":
                         Settings.FrameRate = intValue;
                         break;
@@ -739,27 +748,70 @@ namespace Desktop_Gremlin
                     case "HOVER_FRAME_COUNT":
                         FrameCounts.Hover = intValue;
                         break;
+                    case "SLEEP_FRAME_COUNT":
+                        FrameCounts.Sleep = intValue;
+                        break;
                 }
             }
         }
         private void SpriteImage_RightClick(object sender, MouseButtonEventArgs e)
         {
+            ResetIdleTimer();
+            CurrentFrames.Click = 0;
             States.IsClick = !States.IsClick;
-            CurrentFrames.Hover = 0;
+            if (States.IsClick)
+            {
+                PlaySound("mambo.wav");
+            }
         }
 
         private void SpriteImage_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            States.IsHover = true;
-            States.IsIntro = false;
+            if (!States.IsIntro)
+            {
+                States.IsHover = true;
+            }
         }
 
         private void SpriteImage_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            States.IsHover = false;
-            CurrentFrames.Hover = 0;
+            if (!States.IsIntro)
+            {
+                States.IsHover = false;
+                CurrentFrames.Hover = 0;
+            }
         }
-
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            player.Close();
+            TRAY_ICON?.Dispose();
+        }
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ResetIdleTimer();
+            States.IsDragging = true;
+            DragMove();
+            States.IsDragging = false;
+            Mouse.FollowCursor = !Mouse.FollowCursor;
+            if (Mouse.FollowCursor)
+            {
+                PlaySound("run.wav");
+            }
+        }
+        private void ResetIdleTimer()
+        {
+            _idleTimer.Stop();
+            _idleTimer.Start();
+            States.IsSleeping = false;  
+        }
+        private void IdleTimer_Tick(object sender, EventArgs e)
+        {
+            if (!States.IsSleeping)
+            {
+                States.IsSleeping = true;
+            }
+        }
     }
 
 
