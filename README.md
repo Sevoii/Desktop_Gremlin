@@ -5,7 +5,7 @@ For future development: I'll continue adding on with each itearation and differe
 *Windows only atm (Currently learning avalonia)
 
 DOWNLOAD (Agnes Tachyon ver1.0): [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v.1.2/Desktop_Gremlin_Tachyon.zip) <br>
-DOWNLOAD (Matikanetannhauser ver2.0)[Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v2.0/Release.zip)<br>
+DOWNLOAD (Matikanetannhauser ver2.0): [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v2.0/Release.zip)<br>
 Ver 2.0 (Yes I skipped 1.1 because I want to)<br><br>
 +Updated Sprite manager to maintain memory usage<br>
 +Found a way to add eye movements for different expressions<br>
