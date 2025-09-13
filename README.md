@@ -4,7 +4,7 @@ For future development: I'll continue adding on with each itearation and differe
 *Windows only atm (Currently learning avalonia and hopefully be working on Linux)<br>
 
 DOWNLOAD (Agnes Tachyon ver1.0): [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v.1.2/Desktop_Gremlin_Tachyon.zip) <br>
-DOWNLOAD Matikanetannhauser (V2.0): [Click Here to Donwload](https://github.com/user-attachments/files/22310996/Desktop_Gremlin_Mambo_v2.2.zip)<br>
+DOWNLOAD Matikanetannhauser (V2.0)
 
 
 **Ver 2.0 (Yes I skipped 1.1 because I want to)**<br>
