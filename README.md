@@ -1,7 +1,7 @@
 # 📄 Gremlin 
 Now annoy yourself while you stare idly into the dark abyss known as your computer.**<br>
 For future development: I'll continue adding on with each itearation and different characters that I currently like.
-*Windows only atm (Currently learning avalonia)<br>
+*Windows only atm (Currently learning avalonia and hopefully be working on Linux)<br>
 
 DOWNLOAD (Agnes Tachyon ver1.0): [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v.1.2/Desktop_Gremlin_Tachyon.zip) <br>
 DOWNLOAD matikanetannhauser: [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v2.0/MamboV.2.zip)<br>
