@@ -2,7 +2,7 @@
 Now annoy yourself while you stare idly into the dark abyss known as your computer.**<br>
 For future development: I'll continue adding on with each itearation and different characters that I currently like.
 *Windows only atm (Currently learning avalonia and hopefully be working on Linux version)<br>
-
+# 📋 Updates
 DOWNLOAD (Agnes Tachyon ver1.0): [Click Here to Download](https://github.com/KurtVelasco/Desktop_Gremlin/releases/download/v.1.2/Desktop_Gremlin_Tachyon.zip) <br>
 DOWNLOAD Matikanetannhauser (V2.0) : In releases
 
@@ -12,6 +12,9 @@ DOWNLOAD Matikanetannhauser (V2.0) : In releases
 +Implemented a play wav (will add more scenarios in the future)<br>
 +Smoother mouse Following<br>
 
+**Tracen Academy**<br>
+This version is moslty related to Umamusume. Any related updates for new Umamusume will be
+updated in Tracen Academy version.
 
 ![idle-ezgif com-crop](https://github.com/user-attachments/assets/97495dc4-1a5c-4e11-ac2f-cbf3c882adfe)
 
