@@ -10,7 +10,9 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        ResizeMode="NoResize" BorderThickness="0" BorderBrush="Black">
+        ResizeMode="NoResize" BorderThickness="0" BorderBrush="Black"
+        ShowInTaskbar="False"
+        >
     <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseRightButtonDown="SpriteImage_RightClick" MouseDown="Canvas_MouseDown">
         <Image Name="SpriteImage"
            Width="186" Height="200"

@@ -10,11 +10,24 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.IO;
 using System.Media;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
 
 namespace Desktop_Gremlin
 {
     public partial class Gremlin : Window
     {
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
+        private const int WS_EX_APPWINDOW = 0x00040000;
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        
         //To those reading this, I'm sorry for this messy code, or not//
         //In the future I'm planning to seperate major code snippets into diffrent class files//
         //Instead of barfing evrything in 1 file//
@@ -114,7 +127,6 @@ namespace Desktop_Gremlin
 
         public Gremlin()
         {
-            this.ShowInTaskbar = false;
             InitializeComponent();
             SpriteImage.Source = new CroppedBitmap();
             LoadMasterConfig();
@@ -125,10 +137,24 @@ namespace Desktop_Gremlin
             _idleTimer = new DispatcherTimer();
             _idleTimer.Interval = TimeSpan.FromSeconds(120);
             _idleTimer.Tick += IdleTimer_Tick;
-            ;
             _idleTimer.Start();
+            this.Loaded += RemoveFromAltTab;
         }
 
+        private void RemoveFromAltTab(object sender, RoutedEventArgs e)
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+
+            var exStylePtr = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+            long exStyle = exStylePtr.ToInt64();
+
+            // Remove WS_EX_APPWINDOW and add WS_EX_TOOLWINDOW
+            exStyle &= ~WS_EX_APPWINDOW;
+            exStyle |= WS_EX_TOOLWINDOW;
+
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, new IntPtr(exStyle));
+        }
+        
         //TODO: Put this on a seperate class
         public static class SpriteManager
         {
