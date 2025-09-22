@@ -556,7 +556,15 @@ namespace Desktop_Gremlin
             _closeTimer.Start();
 
         }
-
+        private void ToggleSound(object sender)
+        {
+            if (sender is ToolStripMenuItem item)
+            {
+                _shouldPlaySound = !_shouldPlaySound;
+                item.Text = _shouldPlaySound ? "Mute" : "Unmute";
+            }
+        }
+        
         private void SetupTrayIcon()
         {
             TRAY_ICON = new NotifyIcon();
@@ -571,19 +579,25 @@ namespace Desktop_Gremlin
             }        
  
             TRAY_ICON.Visible = true;
-            TRAY_ICON.Text = "Gremlin";
+            TRAY_ICON.Text = "Desktop Pet";
 
             var menu = new ContextMenuStrip();
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Reappear", null, (s, e) => ResetApp());
+            menu.Items.Add("Mute", null, (s, e) => ToggleSound(s));
             menu.Items.Add("Close", null, (s, e) => CloseApp());
 
             TRAY_ICON.ContextMenuStrip = menu;
         }
 
-
+        private Boolean _shouldPlaySound = false;
         private void PlaySound(string fileName)
         {
+            if (!_shouldPlaySound)
+            {
+                return;
+            }
+            
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sounds", fileName);
 
             if (!File.Exists(path))
