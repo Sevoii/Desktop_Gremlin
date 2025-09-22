@@ -29,7 +29,7 @@ namespace Desktop_Gremlin
         {
             public static int SpriteColumn { get; set; } = 10;
             public static int FrameRate { get; set; } = 31;
-            public static string StartingChar { get; set; } = "Mambo";
+            public static string StartingChar { get; set; } = "Machitan";
             public static double FollowRadius { get; set; } = 150.0;
             public static int FrameWidth { get; set; } = 200;
             public static int FrameHeight { get; set; } = 200;
@@ -761,7 +761,7 @@ namespace Desktop_Gremlin
             States.IsClick = !States.IsClick;
             if (States.IsClick)
             {
-                PlaySound("mambo.wav");
+                PlaySound("machitan.wav");
             }
         }
 

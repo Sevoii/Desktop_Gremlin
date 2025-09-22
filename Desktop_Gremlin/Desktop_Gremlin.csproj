@@ -99,7 +99,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -107,10 +106,11 @@
     <Content Include="config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Sounds\hover.wav" />
     <Content Include="Sounds\intro.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Sounds\mambo.wav">
+    <Content Include="Sounds\machitan.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Sounds\run.wav">
@@ -119,43 +119,43 @@
     <Content Include="Sounds\pat.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\backward.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\backward.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\click.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\click.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\config.txt">
+    <Content Include="SpriteSheet\Gremlins\Machitan\config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\outro.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\outro.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\sleep.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\sleep.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\wIdle.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\wIdle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\forward.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\forward.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\grab.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\grab.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\hover.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\hover.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\idle.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\idle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\intro.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\intro.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\left.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\left.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SpriteSheet\Gremlins\Mambo\right.png">
+    <Content Include="SpriteSheet\Gremlins\Machitan\right.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
