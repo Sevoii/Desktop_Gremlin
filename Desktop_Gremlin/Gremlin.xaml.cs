@@ -606,7 +606,11 @@ namespace Desktop_Gremlin
             var menu = new ContextMenuStrip();
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add("Reappear", null, (s, e) => ResetApp());
-            menu.Items.Add("Mute", null, (s, e) => ToggleSound(s));
+            menu.Items.Add("Unmute", null, (s, e) =>
+            {
+                ToggleSound(s);
+                menu.Refresh();
+            });
             menu.Items.Add("Close", null, (s, e) => CloseApp());
 
             TRAY_ICON.ContextMenuStrip = menu;
