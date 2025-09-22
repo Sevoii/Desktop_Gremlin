@@ -11,7 +11,7 @@
         Background="Transparent"
         Topmost="True"
         ResizeMode="NoResize" BorderThickness="0" BorderBrush="Black">
-    <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseRightButtonDown="SpriteImage_RightClick">
+    <Grid MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseRightButtonDown="SpriteImage_RightClick" MouseDown="Canvas_MouseDown">
         <Image Name="SpriteImage"
            Width="186" Height="200"
            HorizontalAlignment="Left"

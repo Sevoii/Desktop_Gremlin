@@ -10,13 +10,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.IO;
 using System.Media;
+
 namespace Desktop_Gremlin
 {
-
     public partial class Gremlin : Window
     {
-
-
         //To those reading this, I'm sorry for this messy code, or not//
         //In the future I'm planning to seperate major code snippets into diffrent class files//
         //Instead of barfing evrything in 1 file//
@@ -25,6 +23,7 @@ namespace Desktop_Gremlin
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool GetCursorPos(out POINT lpPoint);
+
         public static class Settings
         {
             public static int SpriteColumn { get; set; } = 10;
@@ -34,6 +33,7 @@ namespace Desktop_Gremlin
             public static int FrameWidth { get; set; } = 200;
             public static int FrameHeight { get; set; } = 200;
         }
+
         public class AnimationFrameCounts
         {
             public int Intro { get; set; } = 0;
@@ -48,8 +48,9 @@ namespace Desktop_Gremlin
             public int Click { get; set; } = 0;
             public int Dance { get; set; } = 0;
             public int Hover { get; set; } = 0;
-            public int Sleep { get; set; } = 0; 
+            public int Sleep { get; set; } = 0;
         }
+
         public class AnimationFrame
         {
             public int Intro { get; set; } = 0;
@@ -64,8 +65,9 @@ namespace Desktop_Gremlin
             public int Click { get; set; } = 0;
             public int Dance { get; set; } = 0;
             public int Hover { get; set; } = 0;
-            public int Sleep { get; set; } = 0; 
+            public int Sleep { get; set; } = 0;
         }
+
         public class State
         {
             public bool PlayIntroOnNewSong { get; set; } = true;
@@ -79,8 +81,9 @@ namespace Desktop_Gremlin
             public bool IsWalkIdle { get; set; } = false;
             public bool IsClick { get; set; } = false;
             public bool IsEmoting3 { get; set; } = false;
-            public bool IsSleeping { get; set; } = false;   
+            public bool IsSleeping { get; set; } = false;
         }
+
         public class MouseSettings
         {
             public bool FollowCursor { get; set; } = false;
@@ -90,8 +93,8 @@ namespace Desktop_Gremlin
             public double MouseX { get; set; }
             public double MouseY { get; set; }
             public double Speed { get; set; } = 10.0;
-
         }
+
         public MouseSettings Mouse = new MouseSettings();
         public AnimationFrame CurrentFrames = new AnimationFrame();
         public State States = new State();
@@ -101,16 +104,16 @@ namespace Desktop_Gremlin
         private DispatcherTimer _masterTimer;
         private DispatcherTimer _idleTimer;
         MediaPlayer player = new MediaPlayer();
+
         public struct POINT
         {
             public int X;
             public int Y;
         }
 
- 
+
         public Gremlin()
         {
-
             this.ShowInTaskbar = false;
             InitializeComponent();
             SpriteImage.Source = new CroppedBitmap();
@@ -121,14 +124,16 @@ namespace Desktop_Gremlin
             PlaySound("intro.wav");
             _idleTimer = new DispatcherTimer();
             _idleTimer.Interval = TimeSpan.FromSeconds(120);
-            _idleTimer.Tick += IdleTimer_Tick; ;
+            _idleTimer.Tick += IdleTimer_Tick;
+            ;
             _idleTimer.Start();
         }
-   
+
         //TODO: Put this on a seperate class
         public static class SpriteManager
         {
             private static readonly Dictionary<string, BitmapImage> Cache = new Dictionary<string, BitmapImage>();
+
             private static readonly HashSet<string> AlwaysCached = new HashSet<string>()
             {
                 "idle", "left", "right", "forward", "backward", "widle"
@@ -151,6 +156,7 @@ namespace Desktop_Gremlin
                     NormalError("Unknown animation requested: " + animationName, "Sprite Error");
                     return null;
                 }
+
                 sheet = LoadSprite(Settings.StartingChar, fileName);
                 if (sheet != null)
                 {
@@ -161,41 +167,43 @@ namespace Desktop_Gremlin
                         {
                             Cache.Remove(_currentExtra);
                         }
+
                         _currentExtra = animationName;
                     }
                 }
 
                 return sheet;
             }
+
             private static string GetFileName(string animationName)
             {
                 switch (animationName.ToLower())
                 {
-                    case "idle": 
+                    case "idle":
                         return "idle.png";
-                    case "intro": 
+                    case "intro":
                         return "intro.png";
-                    case "left": 
+                    case "left":
                         return "left.png";
-                    case "right": 
+                    case "right":
                         return "right.png";
-                    case "forward": 
+                    case "forward":
                         return "forward.png";
-                    case "backward": 
+                    case "backward":
                         return "backward.png";
-                    case "outro": 
+                    case "outro":
                         return "outro.png";
-                    case "grab": 
+                    case "grab":
                         return "grab.png";
-                    case "widle": 
+                    case "widle":
                         return "wIdle.png";
-                    case "click": 
+                    case "click":
                         return "click.png";
-                    case "hover": 
+                    case "hover":
                         return "hover.png";
                     case "sleep":
                         return "sleep.png";
-                    default: 
+                    default:
                         return null;
                 }
             }
@@ -206,8 +214,10 @@ namespace Desktop_Gremlin
                 {
                     return;
                 }
+
                 Cache.Remove(animationName);
             }
+
             public static void PruneCache()
             {
                 var keysToRemove = new List<string>();
@@ -277,11 +287,14 @@ namespace Desktop_Gremlin
             System.Windows.MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             System.Windows.Application.Current.Shutdown();
         }
+
         public static void NormalError(string message, string title = "Error")
         {
             System.Windows.MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
         }
-        private int PlayAnimation(BitmapImage sheet, int currentFrame, int frameCount, int frameWidth, int frameHeight, System.Windows.Controls.Image targetImage, bool reverse = false)
+
+        private int PlayAnimation(BitmapImage sheet, int currentFrame, int frameCount, int frameWidth, int frameHeight,
+            System.Windows.Controls.Image targetImage, bool reverse = false)
         {
             if (sheet == null)
             {
@@ -312,7 +325,7 @@ namespace Desktop_Gremlin
                     if (currentFrame >= frameCount - 1)
                     {
                         States.ForwardAnimation = false;
-                    } 
+                    }
                 }
                 else
                 {
@@ -320,28 +333,30 @@ namespace Desktop_Gremlin
                     if (currentFrame <= 0)
                     {
                         States.ForwardAnimation = true;
-                    } 
+                    }
                 }
+
                 return currentFrame;
             }
         }
+
         private void InitializeAnimations()
         {
-
             _masterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000.0 / Settings.FrameRate) };
             _masterTimer.Tick += (s, e) =>
             {
-                if(States.IsSleeping && !States.IsIntro)
+                if (States.IsSleeping && !States.IsIntro)
                 {
                     CurrentFrames.Sleep =
-                    PlayAnimation(
-                    SpriteManager.Get("sleep"),
-                    CurrentFrames.Sleep,
-                    FrameCounts.Sleep,
-                    Settings.FrameWidth,
-                    Settings.FrameHeight,   
-                    SpriteImage);
-                }   
+                        PlayAnimation(
+                            SpriteManager.Get("sleep"),
+                            CurrentFrames.Sleep,
+                            FrameCounts.Sleep,
+                            Settings.FrameWidth,
+                            Settings.FrameHeight,
+                            SpriteImage);
+                }
+
                 if (States.IsIntro)
                 {
                     CurrentFrames.Intro = PlayAnimation(
@@ -357,6 +372,7 @@ namespace Desktop_Gremlin
                         States.IsIntro = false;
                     }
                 }
+
                 if (States.IsDragging)
                 {
                     CurrentFrames.Grab = PlayAnimation(
@@ -399,7 +415,9 @@ namespace Desktop_Gremlin
                         States.IsClick = false;
                     }
                 }
-                if (!States.IsSleeping && !States.IsIntro && !States.IsDragging && !States.IsWalkIdle && !States.IsClick && !States.IsHover)
+
+                if (!States.IsSleeping && !States.IsIntro && !States.IsDragging && !States.IsWalkIdle &&
+                    !States.IsClick && !States.IsHover)
                 {
                     CurrentFrames.Idle = PlayAnimation(
                         SpriteManager.Get("idle"),
@@ -416,8 +434,12 @@ namespace Desktop_Gremlin
                     GetCursorPos(out cursorPos);
                     var cursorScreen = new System.Windows.Point(cursorPos.X, cursorPos.Y);
 
-                    double halfW = SpriteImage.ActualWidth > 0 ? SpriteImage.ActualWidth / 2.0 : Settings.FrameWidth / 2.0;
-                    double halfH = SpriteImage.ActualHeight > 0 ? SpriteImage.ActualHeight / 2.0 : Settings.FrameHeight / 2.0;
+                    double halfW = SpriteImage.ActualWidth > 0
+                        ? SpriteImage.ActualWidth / 2.0
+                        : Settings.FrameWidth / 2.0;
+                    double halfH = SpriteImage.ActualHeight > 0
+                        ? SpriteImage.ActualHeight / 2.0
+                        : Settings.FrameHeight / 2.0;
                     var spriteCenterScreen = SpriteImage.PointToScreen(new System.Windows.Point(halfW, halfH));
 
 
@@ -454,7 +476,7 @@ namespace Desktop_Gremlin
                             if (moveX < 0)
                             {
                                 CurrentFrames.WalkLeft = PlayAnimation(
-                                     SpriteManager.Get("left"),
+                                    SpriteManager.Get("left"),
                                     CurrentFrames.WalkLeft,
                                     FrameCounts.Left,
                                     Settings.FrameWidth,
@@ -464,7 +486,7 @@ namespace Desktop_Gremlin
                             else
                             {
                                 CurrentFrames.WalkRight = PlayAnimation(
-                                     SpriteManager.Get("right"),
+                                    SpriteManager.Get("right"),
                                     CurrentFrames.WalkRight,
                                     FrameCounts.Right,
                                     Settings.FrameWidth,
@@ -477,7 +499,7 @@ namespace Desktop_Gremlin
                             if (moveY > 0)
                             {
                                 CurrentFrames.WalkDown = PlayAnimation(
-                                     SpriteManager.Get("forward"),
+                                    SpriteManager.Get("forward"),
                                     CurrentFrames.WalkDown,
                                     FrameCounts.Down,
                                     Settings.FrameWidth,
@@ -487,7 +509,7 @@ namespace Desktop_Gremlin
                             else
                             {
                                 CurrentFrames.WalkUp = PlayAnimation(
-                                     SpriteManager.Get("backward"),
+                                    SpriteManager.Get("backward"),
                                     CurrentFrames.WalkUp,
                                     FrameCounts.Up,
                                     Settings.FrameWidth,
@@ -511,7 +533,7 @@ namespace Desktop_Gremlin
 
             _masterTimer.Start();
         }
-      
+
 
         private void ResetApp()
         {
@@ -520,6 +542,7 @@ namespace Desktop_Gremlin
             Process.Start(exePath);
             System.Windows.Application.Current.Shutdown();
         }
+
         private void CloseApp()
         {
             _masterTimer.Stop();
@@ -546,16 +569,15 @@ namespace Desktop_Gremlin
                 }
                 catch (Exception ex)
                 {
-                    
                     TRAY_ICON.Visible = false;
-                    TRAY_ICON?.Dispose();               
+                    TRAY_ICON?.Dispose();
                     System.Windows.Application.Current.Shutdown();
                 }
             };
 
             _closeTimer.Start();
-
         }
+
         private void ToggleSound(object sender)
         {
             if (sender is ToolStripMenuItem item)
@@ -564,11 +586,11 @@ namespace Desktop_Gremlin
                 item.Text = _shouldPlaySound ? "Mute" : "Unmute";
             }
         }
-        
+
         private void SetupTrayIcon()
         {
             TRAY_ICON = new NotifyIcon();
-           
+
             if (File.Exists("icon.ico"))
             {
                 TRAY_ICON.Icon = new Icon("icon.ico");
@@ -576,8 +598,8 @@ namespace Desktop_Gremlin
             else
             {
                 TRAY_ICON.Icon = SystemIcons.Application;
-            }        
- 
+            }
+
             TRAY_ICON.Visible = true;
             TRAY_ICON.Text = "Desktop Pet";
 
@@ -591,13 +613,14 @@ namespace Desktop_Gremlin
         }
 
         private Boolean _shouldPlaySound = false;
+
         private void PlaySound(string fileName)
         {
             if (!_shouldPlaySound)
             {
                 return;
             }
-            
+
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sounds", fileName);
 
             if (!File.Exists(path))
@@ -614,7 +637,6 @@ namespace Desktop_Gremlin
             }
             catch (Exception ex)
             {
-             
             }
         }
 
@@ -645,53 +667,58 @@ namespace Desktop_Gremlin
                 switch (key.ToUpper())
                 {
                     case "START_CHAR":
-                        {
-                            Settings.StartingChar = value;
-                            break;
-                        }
+                    {
+                        Settings.StartingChar = value;
+                        break;
+                    }
                     case "SPRITE_SPEED":
+                    {
+                        if (int.TryParse(value, out int intValue))
                         {
-                            if (int.TryParse(value, out int intValue))
-                            {
-                                Settings.FrameRate = intValue;
-                            }
-                            break;
+                            Settings.FrameRate = intValue;
                         }
+
+                        break;
+                    }
                     case "FOLLOW_RADIUS":
+                    {
+                        if (double.TryParse(value, out double intValue))
                         {
-                            if (double.TryParse(value, out double intValue))
-                            {
-                                Settings.FollowRadius = intValue;
-                            }
-                            break;
+                            Settings.FollowRadius = intValue;
                         }
+
+                        break;
+                    }
                     case "SPRITE_COLUMN":
+                    {
+                        if (int.TryParse(value, out int intValue))
                         {
-                            if (int.TryParse(value, out int intValue))
-                            {
-                                Settings.SpriteColumn = intValue;
-                            }
-                            break;
+                            Settings.SpriteColumn = intValue;
                         }
+
+                        break;
+                    }
                     case "FRAME_HEIGHT":
+                    {
+                        if (int.TryParse(value, out int intValue))
                         {
-                            if (int.TryParse(value, out int intValue))
-                            {
-                                Settings.FrameHeight = intValue;
-                            }
-                            break;
+                            Settings.FrameHeight = intValue;
                         }
+
+                        break;
+                    }
                     case "FRAME_WIDTH":
+                    {
+                        if (int.TryParse(value, out int intValue))
                         {
-                            if (int.TryParse(value, out int intValue))
-                            {
-                                Settings.FrameWidth = intValue;
-                            }
+                            Settings.FrameWidth = intValue;
                         }
+                    }
                         break;
                 }
             }
         }
+
         private void LoadConfigChar()
         {
             string path = System.IO.Path.Combine(
@@ -700,7 +727,8 @@ namespace Desktop_Gremlin
 
             if (!File.Exists(path))
             {
-                FatalError("Cannot find character name from config/folder. Please check config file if filename matches",
+                FatalError(
+                    "Cannot find character name from config/folder. Please check config file if filename matches",
                     "Missing Character File");
             }
 
@@ -724,6 +752,7 @@ namespace Desktop_Gremlin
                 {
                     continue;
                 }
+
                 switch (key.ToUpper())
                 {
                     case "FRAME_RATE":
@@ -768,6 +797,7 @@ namespace Desktop_Gremlin
                 }
             }
         }
+
         private void SpriteImage_RightClick(object sender, MouseButtonEventArgs e)
         {
             ResetIdleTimer();
@@ -795,30 +825,42 @@ namespace Desktop_Gremlin
                 CurrentFrames.Hover = 0;
             }
         }
+
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
             player.Close();
             TRAY_ICON?.Dispose();
         }
+
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ResetIdleTimer();
             States.IsDragging = true;
             DragMove();
             States.IsDragging = false;
-            Mouse.FollowCursor = !Mouse.FollowCursor;
-            if (Mouse.FollowCursor)
+        }
+
+        private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
             {
-                PlaySound("run.wav");
+                Mouse.FollowCursor = !Mouse.FollowCursor;
+                if (Mouse.FollowCursor)
+                {
+                    PlaySound("run.wav");
+                }
             }
         }
+
+
         private void ResetIdleTimer()
         {
             _idleTimer.Stop();
             _idleTimer.Start();
-            States.IsSleeping = false;  
+            States.IsSleeping = false;
         }
+
         private void IdleTimer_Tick(object sender, EventArgs e)
         {
             if (!States.IsSleeping)
@@ -827,7 +869,4 @@ namespace Desktop_Gremlin
             }
         }
     }
-
-
-
 }
