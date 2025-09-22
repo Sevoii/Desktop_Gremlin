@@ -621,7 +621,7 @@ namespace Desktop_Gremlin
                 return;
             }
 
-            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sounds", fileName);
+            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Sounds", Settings.StartingChar, fileName);
 
             if (!File.Exists(path))
             {
@@ -805,7 +805,7 @@ namespace Desktop_Gremlin
             States.IsClick = !States.IsClick;
             if (States.IsClick)
             {
-                PlaySound("machitan.wav");
+                PlaySound("rightclick.wav");
             }
         }
 
